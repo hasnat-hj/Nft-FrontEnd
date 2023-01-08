@@ -1,38 +1,53 @@
-import 'tippy.js/dist/tippy.css';
+import "tippy.js/dist/tippy.css";
 
-import Tippy from '@tippyjs/react';
-import { ethers } from 'ethers';
-import Link from 'next/link';
-import Router, { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import { FileUploader } from 'react-drag-drop-files';
-import { useDispatch, useSelector } from 'react-redux';
+import Tippy from "@tippyjs/react";
+import { ethers } from "ethers";
+import Link from "next/link";
+import Router, { useRouter } from "next/router";
+import React, { useState } from "react";
+import { FileUploader } from "react-drag-drop-files";
+import { useDispatch, useSelector } from "react-redux";
 
-import CategoryDropdown from '../../components/dropdown/categoryDropdown';
-import Collection_dropdown2 from '../../components/dropdown/collection_dropdown2';
-import Meta from '../../components/Meta';
-import Proparties_modal from '../../components/modal/proparties_modal';
-import { loadContracts } from '../../contractABI/interact';
-import { pinJSONToIPFS } from '../../contractABI/pinata';
-import { tranding_categories } from '../../data/categories_data';
-import { collectionDropdown2_data, EthereumDropdown2_data } from '../../data/dropdown';
-import { showPropatiesModal } from '../../redux/counterSlice';
-import axiosInstance from '../../utils/axiosInterceptor';
+import CategoryDropdown from "../../components/dropdown/categoryDropdown";
+import Collection_dropdown2 from "../../components/dropdown/collection_dropdown2";
+import Meta from "../../components/Meta";
+import Proparties_modal from "../../components/modal/proparties_modal";
+import { loadContracts } from "../../contractABI/interact";
+import { pinJSONToIPFS } from "../../contractABI/pinata";
+import { tranding_categories } from "../../data/categories_data";
+import {
+  collectionDropdown2_data,
+  EthereumDropdown2_data,
+} from "../../data/dropdown";
+import { showPropatiesModal } from "../../redux/counterSlice";
+import axiosInstance from "../../utils/axiosInterceptor";
 
 const Create = () => {
-  const fileTypes = ["JPG", "PNG", "GIF", "SVG", "MP4", "WEBM", "MP3", "WAV", "OGG", "GLB", "GLTF"];
+  const fileTypes = [
+    "JPG",
+    "PNG",
+    "GIF",
+    "SVG",
+    "MP4",
+    "WEBM",
+    "MP3",
+    "WAV",
+    "OGG",
+    "GLB",
+    "GLTF",
+  ];
 
   const router = useRouter();
-  const { loggedin } = useSelector(state => state.counter);
+  const { loggedin } = useSelector((state) => state.counter);
   const [file, setFile] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({
     status: false,
-    message: ""
+    message: "",
   });
   const [success, setSuccess] = useState({
     status: false,
-    message: ""
+    message: "",
   });
   // Input state where all user data stored
 
@@ -47,8 +62,8 @@ const Create = () => {
     Blockchain: "Ethereum",
     FreezeMetadata: "",
     price: "",
-    category: "art",
-    type: "fixed"
+    category: "",
+    type: "fixed",
   });
 
   const mintNFT = async () => {
@@ -68,7 +83,8 @@ const Create = () => {
     setLoading(true);
     setError({ status: false, message: "" });
 
-    const { marketplace, nft, address, status } = await loadContracts();
+    const { marketplace, nft, address, status, auction } =
+      await loadContracts();
 
     console.log({ status });
 
@@ -78,23 +94,102 @@ const Create = () => {
     metadata.description = input.description;
 
     const pinataResponse = await pinJSONToIPFS(metadata);
-    console.log({ pinataResponse });
+    console.log( pinataResponse );
     if (!pinataResponse.success) {
-      setError({ status: true, message: "Something went wrong please Try again!" });
+      setError({
+        status: true,
+        message: "Something went wrong please Try again!",
+      });
       return;
     }
     const tokenURI = pinataResponse.pinataUrl;
     console.log("image name", input.image.name);
     console.log("token url", tokenURI);
     console.log("price", input.price);
+
+    // this code is only works for polygon chain, will update to multichain later
     try {
+      // if auction is selected
+      /* ---------START------------- */
+      if(input.type=="auction"){
       const mint = await nft.mint(tokenURI);
       setSuccess({ status: false, message: "Minting your NFT..." });
       await mint.wait();
       console.log({ mint });
 
       const id = await nft.tokenCount();
-      console.log("id", id);
+      id = parseInt(id);
+      // console.log("id", id);
+
+      //
+
+      await (await nft.setApprovalForAll(auction.address, true)).wait();
+      setSuccess({ status: false, message: "Waiting for Approval" });
+
+      // add nft to marketplace
+      const listingPrice = ethers.utils.parseEther(input.price.toString());
+
+      // was facing time issues, kindly send the time in unix timestamp this endtime expires in a day from current time
+      // update with your logic
+      function addOneDay(date) {
+        date.setDate(date.getDate() + 1);
+        return date;
+      };
+      let duration = new Date()
+duration=addOneDay(duration)
+duration = duration.valueOf();
+let endTime = parseInt(duration);
+
+
+console.log(endTime)
+
+
+      let tx = await (
+        await auction.createTokenAuction(
+          "0xb47c604A3F94a9f1bF205898accc11CfF5e27587",
+          id,
+          listingPrice,
+          endTime
+        )
+      ).wait();
+      setSuccess({ status: false, message: "Listing for Auction" });
+
+      if (tx) {
+        // this if condition will be changed later
+
+        // Auction API, kindly cross check the api if it's working fine or not
+        const formData = new FormData();
+        formData.append("id", id);
+        formData.append("name", name);
+        formData.append("minbid", input.price);
+        formData.append("curbid", 0);
+        formData.append("duration", endTime);
+        formData.append("nftImage", image);
+        formData.append("isBuy", false);
+        formData.append("owner", walletAddress);
+        await axiosInstance
+          .post("/Anft/createAuctionNft", formData, {})
+          .then((response) => console.log(response));
+        //activity
+        await axiosInstance
+          .post("/activity/", {
+            collectionId: "4",
+            itemName: name,
+            events: "auction",
+            price: input.price,
+            from: walletAddress,
+            to: "0x00",
+            transactionHash: "0x00",
+          })
+          .then((response) => console.log(response));
+      }
+    }
+      /* ---------END------------- */
+else{
+console.log("fixed")
+      const mint = await nft.mint(tokenURI);
+      setSuccess({ status: false, message: "Minting your NFT..." });
+      await mint.wait();
       const nftApprove = await nft.approve(marketplace.address, id);
       setSuccess({ status: false, message: "Approving your NFT..." });
       await nftApprove.wait();
@@ -111,7 +206,8 @@ const Create = () => {
       await makeItem.wait();
       console.log("waiting.... end");
 
-      if (id) {
+      // Fixed price API, kindly cross check the api if it's working fine or not
+      if (id) { // this if condition will be changed later
         console.log("create call with id");
         const formData = new FormData();
         formData.append("id", id);
@@ -126,13 +222,17 @@ const Create = () => {
         console.log({ formData }, input.image);
         const res = await axiosInstance.post("/nft/createNft", formData, {});
 
-        setSuccess({ status: true, message: "Congratulations NFT created successfully!" });
+        setSuccess({
+          status: true,
+          message: "Congratulations NFT created successfully!",
+        });
         setLoading(false);
         setTimeout(() => {
           router.push("/");
         }, 2000);
         console.log("res", res);
       }
+}
     } catch (err) {
       console.log("create error", err);
       if (err.code === "ACTION_REJECTED") {
@@ -140,33 +240,42 @@ const Create = () => {
         setError({ status: true, message: "Request rejected by user" });
       } else {
         setLoading(false);
-        setError({ status: true, message: "Something went wrong! Please try again" });
+        setError({
+          status: true,
+          message: "Something went wrong! Please try again",
+        });
       }
     }
   };
 
   // Get value from the collection component for the input.Collection
-  const Get_collection_Value = Collectionvalue => {
-    setinput(prevState => ({ ...prevState, Collection: { Collectionvalue } }));
+  const Get_collection_Value = (Collectionvalue) => {
+    setinput((prevState) => ({
+      ...prevState,
+      Collection: { Collectionvalue },
+    }));
   };
 
   // Get value from the category component for the input.Collection
-  const Get_Category_Value = categoryValue => {
+  const Get_Category_Value = (categoryValue) => {
     console.log("category value", categoryValue);
-    setinput(prevState => ({ ...prevState, category: categoryValue }));
+    setinput((prevState) => ({ ...prevState, category: categoryValue }));
   };
   // Get value from the collection component for the input.Blockchain
-  const Get_Value_Blockchain = Blockchainvalue => {
-    setinput(prevState => ({ ...prevState, Blockchain: 97 })); // Blockchain: { Blockchainvalue }, //old
+  const Get_Value_Blockchain = (Blockchainvalue) => {
+    setinput((prevState) => ({ ...prevState, Blockchain: 97 })); // Blockchain: { Blockchainvalue }, //old
   };
   const dispatch = useDispatch();
 
-  const handleChangeImage = file => {
+  const handleChangeImage = (file) => {
     setFile(file.name);
-    setinput(prevState => ({ ...prevState, image: file })); // image: file.name, //old
+    setinput((prevState) => ({ ...prevState, image: file })); // image: file.name, //old
   };
-  const handleChange = e => {
-    setinput(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    setinput((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const popupItemData = [
@@ -174,10 +283,20 @@ const Create = () => {
       id: 1,
       name: "proparties",
       text: "Textual traits that show up as rectangles.",
-      icon: "proparties-icon"
+      icon: "proparties-icon",
     },
-    { id: 2, name: "levels", text: "Numerical traits that show as a progress bar.", icon: "level-icon" },
-    { id: 3, name: "stats", text: "Numerical traits that just show as numbers.", icon: "stats-icon" }
+    {
+      id: 2,
+      name: "levels",
+      text: "Numerical traits that show as a progress bar.",
+      icon: "level-icon",
+    },
+    {
+      id: 3,
+      name: "stats",
+      text: "Numerical traits that just show as numbers.",
+      icon: "stats-icon",
+    },
   ];
   return (
     <div>
@@ -185,7 +304,11 @@ const Create = () => {
       {/* <!-- Create --> */}
       <section className="relative py-24">
         <picture className="pointer-events-none absolute inset-0 -z-10 dark:hidden">
-          <img src="/images/gradient_light.jpg" alt="gradient" className="h-full w-full" />
+          <img
+            src="/images/gradient_light.jpg"
+            alt="gradient"
+            className="h-full w-full"
+          />
         </picture>
         <div className="container">
           <h1 className="font-display text-jacarta-700 py-16 text-center text-4xl font-medium dark:text-white">
@@ -200,11 +323,15 @@ const Create = () => {
                 <span className="text-red">*</span>
               </label>
 
-              {file
-                ? <p className="dark:text-jacarta-300 text-2xs mb-3">
-                    successfully uploaded : {file}
-                  </p>
-                : <p className="dark:text-jacarta-300 text-2xs mb-3">Drag or choose your file to upload</p>}
+              {file ? (
+                <p className="dark:text-jacarta-300 text-2xs mb-3">
+                  successfully uploaded : {file}
+                </p>
+              ) : (
+                <p className="dark:text-jacarta-300 text-2xs mb-3">
+                  Drag or choose your file to upload
+                </p>
+              )}
 
               <div className="dark:bg-jacarta-700 dark:border-jacarta-600 border-jacarta-100 group relative flex max-w-md flex-col items-center justify-center rounded-lg border-2 border-dashed bg-white py-20 px-5 text-center">
                 <div className="relative z-10 cursor-pointer">
@@ -219,7 +346,8 @@ const Create = () => {
                     <path d="M16 13l6.964 4.062-2.973.85 2.125 3.681-1.732 1-2.125-3.68-2.223 2.15L16 13zm-2-7h2v2h5a1 1 0 0 1 1 1v4h-2v-3H10v10h4v2H9a1 1 0 0 1-1-1v-5H6v-2h2V9a1 1 0 0 1 1-1h5V6zM4 14v2H2v-2h2zm0-4v2H2v-2h2zm0-4v2H2V6h2zm0-4v2H2V2h2zm4 0v2H6V2h2zm4 0v2h-2V2h2zm4 0v2h-2V2h2z" />
                   </svg>
                   <p className="dark:text-jacarta-300 mx-auto max-w-xs text-xs">
-                    JPG, PNG, GIF, SVG, MP4, WEBM, MP3, WAV, OGG, GLB, GLTF. Max size: 100 MB
+                    JPG, PNG, GIF, SVG, MP4, WEBM, MP3, WAV, OGG, GLB, GLTF. Max
+                    size: 100 MB
                   </p>
                 </div>
                 <div className="dark:bg-jacarta-600 bg-jacarta-50 absolute inset-4 cursor-pointer rounded opacity-0 group-hover:opacity-100 ">
@@ -237,7 +365,10 @@ const Create = () => {
             </div>
             {/* <!-- Name --> */}
             <div className="mb-6">
-              <label htmlFor="item-name" className="font-display text-jacarta-700 mb-2 block dark:text-white">
+              <label
+                htmlFor="item-name"
+                className="font-display text-jacarta-700 mb-2 block dark:text-white"
+              >
                 Name<span className="text-red">*</span>
               </label>
               <input
@@ -260,8 +391,9 @@ const Create = () => {
                 External link
               </label>
               <p className="dark:text-jacarta-300 text-2xs mb-3">
-                We will include a link to this URL on this {"item's"} detail page, so that users can click to
-                learn more about it. You are welcome to link to your own webpage with more details.
+                We will include a link to this URL on this {"item's"} detail
+                page, so that users can click to learn more about it. You are
+                welcome to link to your own webpage with more details.
               </p>
               <input
                 value={input.externalLink}
@@ -282,8 +414,8 @@ const Create = () => {
                 Description
               </label>
               <p className="dark:text-jacarta-300 text-2xs mb-3">
-                The description will be included on the {"item's"} detail page underneath its image. Markdown
-                syntax is supported.
+                The description will be included on the {"item's"} detail page
+                underneath its image. Markdown syntax is supported.
               </p>
               <textarea
                 value={input.description}
@@ -299,13 +431,20 @@ const Create = () => {
             {/* <!-- Collection --> */}
             <div className="relative">
               <div>
-                <label className="font-display text-jacarta-700 mb-2 block dark:text-white">Collection</label>
+                <label className="font-display text-jacarta-700 mb-2 block dark:text-white">
+                  Collection
+                </label>
                 <div className="mb-3 flex items-center space-x-2">
                   <p className="dark:text-jacarta-300 text-2xs">
                     This is the collection where your item will appear.
                     <Tippy
                       theme="tomato-theme"
-                      content={<span>Moving items to a different collection may take up to 30 minutes.</span>}
+                      content={
+                        <span>
+                          Moving items to a different collection may take up to
+                          30 minutes.
+                        </span>
+                      }
                     >
                       <span className="inline-block">
                         <svg
@@ -328,6 +467,7 @@ const Create = () => {
               <div className="dropdown my-1 cursor-pointer">
                 <Collection_dropdown2
                   data={collectionDropdown2_data}
+                  selected={input.Collection}
                   collection={true}
                   Get_Value={Get_collection_Value}
                 />
@@ -350,9 +490,7 @@ const Create = () => {
                         <label className="font-display text-jacarta-700 block dark:text-white">
                           {name}
                         </label>
-                        <p className="dark:text-jacarta-300">
-                          {text}
-                        </p>
+                        <p className="dark:text-jacarta-300">{text}</p>
                       </div>
                     </div>
                     <button
@@ -396,23 +534,23 @@ const Create = () => {
                       Unlockable Content
                     </label>
                     <p className="dark:text-jacarta-300">
-                      Include unlockable content that can only be revealed by the owner of the item.
+                      Include unlockable content that can only be revealed by
+                      the owner of the item.
                     </p>
                   </div>
                 </div>
                 <input
                   value={input.Unlockable_Content}
                   onChange={() => {
-                    setinput(prevState => ({
+                    setinput((prevState) => ({
                       ...prevState,
-                      Unlockable_Content: !input.Unlockable_Content
+                      Unlockable_Content: !input.Unlockable_Content,
                     }));
                   }}
                   type="checkbox"
                   name="Unlockable_Content"
                   className="checked:bg-accent checked:focus:bg-accent checked:hover:bg-accent after:bg-jacarta-400 bg-jacarta-100 relative h-6 w-[2.625rem] cursor-pointer appearance-none rounded-full border-none after:absolute after:top-[0.1875rem] after:left-[0.1875rem] after:h-[1.125rem] after:w-[1.125rem] after:rounded-full after:transition-all checked:bg-none checked:after:left-[1.3125rem] checked:after:bg-white focus:ring-transparent focus:ring-offset-0"
                 />{" "}
-                // value="checkbox"
               </div>
             </div>
             {/* <!-- Explicit & Sensitive Content --> */}
@@ -440,9 +578,10 @@ const Create = () => {
                       <Tippy
                         content={
                           <span>
-                            Setting your asset as explicit and sensitive content, like pornography and other
-                            not safe for work (NSFW) content, will protect users with safe search while
-                            browsing Blenny
+                            Setting your asset as explicit and sensitive
+                            content, like pornography and other not safe for
+                            work (NSFW) content, will protect users with safe
+                            search while browsing Blenny
                           </span>
                         }
                       >
@@ -465,9 +604,10 @@ const Create = () => {
                 <input
                   value={input.Explicit_Sensitive_Content}
                   onChange={() => {
-                    setinput(prevState => ({
+                    setinput((prevState) => ({
                       ...prevState,
-                      Explicit_Sensitive_Content: !input.Explicit_Sensitive_Content
+                      Explicit_Sensitive_Content:
+                        !input.Explicit_Sensitive_Content,
                     }));
                   }}
                   type="checkbox"
@@ -486,7 +626,11 @@ const Create = () => {
 
               {/* dropdown */}
               <div className="my-1 cursor-pointer">
-                <CategoryDropdown data={tranding_categories} Get_Value={Get_Category_Value} />
+                <CategoryDropdown
+                  data={tranding_categories}
+                  selected={input.category}
+                  Get_Value={Get_Category_Value}
+                />
               </div>
             </div>
             {/* <!-- Supply --> */}
@@ -504,9 +648,10 @@ const Create = () => {
                   <Tippy
                     content={
                       <span>
-                        Setting your asset as explicit and sensitive content, like pornography and other not
-                        safe for work (NSFW) content, will protect users with safe search while browsing
-                        Blenny.
+                        Setting your asset as explicit and sensitive content,
+                        like pornography and other not safe for work (NSFW)
+                        content, will protect users with safe search while
+                        browsing Blenny.
                       </span>
                     }
                   >
@@ -547,7 +692,10 @@ const Create = () => {
 
               {/* dropdown */}
               <div className=" dropdown relative mb-4 cursor-pointer ">
-                <Collection_dropdown2 data={EthereumDropdown2_data} Get_Value={Get_Value_Blockchain} />
+                <Collection_dropdown2
+                  data={EthereumDropdown2_data}
+                  Get_Value={Get_Value_Blockchain}
+                />
               </div>
             </div>
             {/* <!-- Select type auction or fixed price --> */}
@@ -569,7 +717,10 @@ const Create = () => {
                       type="radio"
                       value="fixed"
                       onChange={() => {
-                        setinput(prevState => ({ ...prevState, type: "fixed" }));
+                        setinput((prevState) => ({
+                          ...prevState,
+                          type: "fixed",
+                        }));
                       }}
                       name="list-radio"
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
@@ -582,14 +733,17 @@ const Create = () => {
                     </label>
                   </div>
                 </li>
-                <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                <li style={{borderRightWidth:0}} className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
                   <div className="flex items-center pl-3">
                     <input
                       id="horizontal-list-radio-id"
                       type="radio"
                       value="auction"
                       onChange={() => {
-                        setinput(prevState => ({ ...prevState, type: "auction" }));
+                        setinput((prevState) => ({
+                          ...prevState,
+                          type: "auction",
+                        }));
                       }}
                       name="list-radio"
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
@@ -670,67 +824,80 @@ const Create = () => {
             </div>
             {/* <!-- Submit --> */}
             <div className="flex flex-col md:flex-row text-center space-x-6 ">
-              {loggedin
-                ? <span>
-                    {" "}{loading
-                      ? <div role="status">
-                          <svg
-                            aria-hidden="true"
-                            className="mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-                            viewBox="0 0 100 101"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                              fill="currentColor"
-                            />
-                            <path
-                              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                              fill="currentFill"
-                            />
-                          </svg>
-                          <span className="text-green">
-                            {!success.status && success.message}
-                            {success.status &&
-                              success.message === "" &&
-                              "Please wait your NFT creation take time..."}
-                          </span>
-                        </div>
-                      : <button
-                          id="CreateButton"
-                          onClick={
-                            mintNFT // onClick={CreateNFT}
-                          }
-                          className=" bg-accent-dark cursor-pointer rounded-full py-3 px-8 text-center font-semibold text-white transition-all"
-                        >
-                          Create
-                        </button>}
-                    {error.status === true &&
-                      <p id="Error" className="py-3 font-semibold text-red transition-all">
-                        <span>
-                          {error.message}
-                        </span>
-                      </p>}
-                    {success.status === true &&
-                      <p id="Error" className="py-3 font-semibold text-green transition-all">
-                        <span>
-                          {success.message}
-                        </span>
-                      </p>}
-                  </span>
-                : <span className="flex space-x-3">
-                    {" "}<Link href="/login">
-                      <a>
-                        <button className=" bg-accent-dark cursor-pointer rounded-full py-3 px-8 text-center font-semibold text-white transition-all">
-                          Login
-                        </button>{" "}
-                      </a>
-                    </Link>
-                    <p id="Error" className=" py-3 font-semibold text-red transition-all">
-                      <span>You have to login first</span>
+              {loggedin ? (
+                <span>
+                  {" "}
+                  {loading ? (
+                    <div role="status">
+                      <svg
+                        aria-hidden="true"
+                        className="mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                        viewBox="0 0 100 101"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                          fill="currentColor"
+                        />
+                        <path
+                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                          fill="currentFill"
+                        />
+                      </svg>
+                      <span className="text-green">
+                        {!success.status && success.message}
+                        {success.status &&
+                          success.message === "" &&
+                          "Please wait your NFT creation take time..."}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      id="CreateButton"
+                      onClick={
+                        mintNFT // onClick={CreateNFT}
+                      }
+                      className=" bg-accent-dark cursor-pointer rounded-full py-3 px-8 text-center font-semibold text-white transition-all"
+                    >
+                      Create
+                    </button>
+                  )}
+                  {error.status === true && (
+                    <p
+                      id="Error"
+                      className="py-3 font-semibold text-red transition-all"
+                    >
+                      <span>{error.message}</span>
                     </p>
-                  </span>}
+                  )}
+                  {success.status === true && (
+                    <p
+                      id="Error"
+                      className="py-3 font-semibold text-green transition-all"
+                    >
+                      <span>{success.message}</span>
+                    </p>
+                  )}
+                </span>
+              ) : (
+                <span className="flex space-x-3">
+                  {" "}
+                  <Link href="/login">
+                    <a>
+                      <button className=" bg-accent-dark cursor-pointer rounded-full py-3 px-8 text-center font-semibold text-white transition-all">
+                        Login
+                      </button>{" "}
+                    </a>
+                  </Link>
+                  <p
+                    id="Error"
+                    className=" py-3 font-semibold text-red transition-all"
+                  >
+                    <span>You have to login first</span>
+                  </p>
+                </span>
+              )}
             </div>
           </div>
         </div>

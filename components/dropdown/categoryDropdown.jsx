@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-const CategoryDropdown = ({ data, collection, Get_Value }) => {
+const CategoryDropdown = ({ data, collection, Get_Value ,selected}) => {
   const [dropdown, setDropdown] = useState(false);
   const [activeItem, setActiveItem] = useState(0);
   
   const handleDropdown = () => {
     window.addEventListener("click", (w) => {
-      if (w.target.closest(".dropdown-toggle")) {
+      if (w.target.closest("#dropdown2")) {
         if (dropdown) {
           setDropdown(false);
         } else {
@@ -35,8 +35,9 @@ const CategoryDropdown = ({ data, collection, Get_Value }) => {
         <div
           className="dark:bg-jacarta-700 dropdown-toggle border-jacarta-100 dark:border-jacarta-600 dark:text-jacarta-300 flex items-center justify-between rounded-lg border bg-white py-3 px-3 show z-50 relative"
           onClick={() => handleDropdown()}
+          id='dropdown2'
         >
-          <span className="">Select category</span>
+          <span className="">{selected?selected:"Select Category"}</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"

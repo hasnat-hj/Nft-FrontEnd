@@ -643,7 +643,7 @@ const collection_item_data = [
 		amount: '875.65',
 	},
 ];
-
+ 
 const collection_activity_item_data = [
 	{
 		id: '0Lazyone Panda',

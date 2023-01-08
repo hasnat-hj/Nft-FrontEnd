@@ -1,37 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { collection_activity_item_data } from '../../data/collection_data';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import { activityServices } from '../../services/activity';
+import { timeSince } from '../../utils/timeSince';
+ 
 const Activity_item = () => {
 	const [filterVal, setFilterVal] = useState(null);
 	function onlyUnique(value, index, self) {
 		return self.indexOf(value) === index;
 	}
 
-	const [data, setData] = useState(collection_activity_item_data);
+	const [activitiesData, setActivities] = useState([]);
+	const [allActivities, setAllActivities] = useState([]);
 	const [filterData, setfilterData] = useState(
-		collection_activity_item_data.map((item) => {
-			const { category } = item;
-			return category;
+		['purchases', 'listing', 'transfer', 'bids', 'likes'].map((item) => {
+			return item;
 		})
 	);
 
 	const [inputText, setInputText] = useState('');
 
 	const handleFilter = (category) => {
-		setData(collection_activity_item_data.filter((item) => item.category === category));
+		setActivities(allActivities.filter((item) => item.category === category));
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		const newArray = collection_activity_item_data.filter((item) => {
+		const newArray = activitiesData.filter((item) => {
 			return item.title.toLowerCase().includes(inputText);
 		});
-		setData(newArray);
+		setActivities(newArray);
 		setInputText('');
 	};
 
 	useEffect(() => {
+		activityServices.getAll().then(res => {
+			setActivities(res.data);
+			setAllActivities(res.data);
+		}).catch(err => {
+			console.log(err);
+		})
 		setfilterData(filterData.filter(onlyUnique));
 	}, []);
 
@@ -43,16 +50,32 @@ const Activity_item = () => {
 				<div className="lg:flex">
 					{/* <!-- Records --> */}
 					<div className="mb-10 shrink-0 basis-8/12 space-y-5 lg:mb-0 lg:pr-10">
-						{data.slice(0, 5).map((item) => {
-							const { id, image, title, price, time, category } = item;
-							const itemLink = image
-								.split('/')
-								.slice(-1)
-								.toString()
-								.replace('.jpg', '')
-								.replace('.gif', '')
-								.replace('_sm', '')
-								.replace('avatar', 'item');
+						{activitiesData.map((item, index) => {
+							const {
+								id=index+1,
+								itemLink='',
+								image ='',
+								title='',
+								price='',
+								category='',
+								time='',
+								from='',
+							}= {
+								id: index+1,
+								itemLink: item?.itemLink,
+								image:item?.image,
+								title: item?.itemName,
+								price: item?.price,
+								category: item?.category,
+								time: item?.createdAt,
+								from: item?.from
+							}
+							const priceText = category == 'purchases' ? `sold for ${price}`:
+											category == 'listing' ? `listed by ${from}` : 
+												category == 'transfer' ? `tranferred from ${from}` :
+													category == 'bids' ? `bid cancelled by ${from}` :
+														category == 'likes' ? `liked by ${from}` : '';
+									
 							return (
 								<Link href={`/item/${itemLink}`} key={id}>
 									<a className="dark:bg-jacarta-700 dark:border-jacarta-700 border-jacarta-100 rounded-2.5xl relative flex items-center border bg-white p-8 transition-shadow hover:shadow-lg">
@@ -73,9 +96,9 @@ const Activity_item = () => {
 												{title}
 											</h3>
 											<span className="dark:text-jacarta-200 text-jacarta-500 mb-3 block text-sm">
-												{price}
+												{priceText}
 											</span>
-											<span className="text-jacarta-300 block text-xs">{time}</span>
+											<span className="text-jacarta-300 block text-xs">{timeSince(new Date(time))}</span>
 										</div>
 
 										<div className="dark:border-jacarta-600 border-jacarta-100 ml-auto rounded-full border p-3">

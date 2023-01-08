@@ -3,6 +3,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import btoa from 'btoa';
 
 import { loadContracts } from '../../contractABI/interact.js';
 import { buyModalHide } from '../../redux/counterSlice';

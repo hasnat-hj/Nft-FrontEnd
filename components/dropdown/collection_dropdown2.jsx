@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-const Collection_dropdown2 = ({ data, collection, Get_Value }) => {
+const Collection_dropdown2 = ({ data, collection, Get_Value ,selected}) => {
   const [dropdown, setDropdown] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
   const handleDropdown = () => {
     window.addEventListener("click", (w) => {
-      if (w.target.closest(".dropdown-toggle")) {
+      if (w.target.closest("#dropdown1")) {
         if (dropdown) {
           setDropdown(false);
         } else {
@@ -17,6 +17,8 @@ const Collection_dropdown2 = ({ data, collection, Get_Value }) => {
     });
   };
   const HandleCollectionValue = (id, name) => {
+    console.log(id)
+    console.log(name)
     setActiveItem(id);
     Get_Value(name);
   };
@@ -34,8 +36,9 @@ const Collection_dropdown2 = ({ data, collection, Get_Value }) => {
         <div
           className="dark:bg-jacarta-700 dropdown-toggle border-jacarta-100 dark:border-jacarta-600 dark:text-jacarta-300 flex items-center justify-between rounded-lg border bg-white py-3 px-3 show z-50 relative"
           onClick={() => handleDropdown()}
+          id='dropdown1'
         >
-          <span className="">Select collection</span>
+          <span className="">{selected?selected.Collectionvalue:"Select collection"}</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"

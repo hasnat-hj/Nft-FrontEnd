@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 
 import axiosInstance from '../utils/axiosInterceptor.js';
 import Marketplace from './marketplace.json';
+import Auction from './auction.json';
 import NFT from './nft.json';
 import { pinJSONToIPFS } from './pinata.js';
 
@@ -11,12 +12,18 @@ export const loadContracts = async () => {
 
   // Get deployed copies of contracts
   const marketplace = new ethers.Contract(
-    "0x65F892616d9D533157E7818c799EbF3e3b18Ca84",
+    "0x8bCf0Ba04ff6D120A6415C7bb34bD650Ea8ECA6b",
     Marketplace.abi,
     signer
   );
+
+  const auction = new ethers.Contract(
+    "0xb4a5D0d225aF378a25Ea2EC3B2618768bc99c03b",
+    Auction.abi,
+    signer
+  );
   //setMarketplace(marketplace)
-  const nft = new ethers.Contract("0x4A913264F676ECf731a10a45807480222A4FaAc5", NFT.abi, signer);
+  const nft = new ethers.Contract("0xb47c604A3F94a9f1bF205898accc11CfF5e27587", NFT.abi, signer);
 
   //wallet address
 
@@ -26,6 +33,7 @@ export const loadContracts = async () => {
   if (addressArray.length > 0) {
     return {
       marketplace: marketplace,
+      auction: auction,
       nft: nft,
       address: addressArray[0],
       status: ""
