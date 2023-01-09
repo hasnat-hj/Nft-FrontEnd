@@ -1,34 +1,60 @@
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
-import axiosInstance from '../utils/axiosInterceptor.js';
-import Marketplace from './marketplace.json';
-import Auction from './auction.json';
-import NFT from './nft.json';
-import { pinJSONToIPFS } from './pinata.js';
+import axiosInstance from "../utils/axiosInterceptor.js";
+import Marketplace from "./marketplace.json";
+import Auction from "./auction.json";
+import NFT from "./nft.json";
+import { pinJSONToIPFS } from "./pinata.js";
 
 export const loadContracts = async () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const chainId = provider.getNetwork();
   const signer = provider.getSigner();
 
+  // if (chainId === 80001) {
+
   // Get deployed copies of contracts
-  const marketplace = new ethers.Contract(
-    "0x8bCf0Ba04ff6D120A6415C7bb34bD650Ea8ECA6b",
+  var marketplace = new ethers.Contract(
+    "0x70B6856af810FB2d845B7ca25282e9690eE46b22",
     Marketplace.abi,
     signer
   );
 
-  const auction = new ethers.Contract(
+  var auction = new ethers.Contract(
     "0xb4a5D0d225aF378a25Ea2EC3B2618768bc99c03b",
     Auction.abi,
     signer
   );
-  //setMarketplace(marketplace)
-  const nft = new ethers.Contract("0xb47c604A3F94a9f1bF205898accc11CfF5e27587", NFT.abi, signer);
 
-  //wallet address
+  var nft = new ethers.Contract(
+    "0xb47c604A3F94a9f1bF205898accc11CfF5e27587",
+    NFT.abi,
+    signer
+  );
+
+  // } else if (chainId === 5) {
+  //   console.log(chainId)
+  //   var marketplace = new ethers.Contract(
+  //     "0xb4a5d0d225af378a25ea2ec3b2618768bc99c03b",
+  //     Marketplace.abi,
+  //     signer
+  //   );
+
+  //   var auction = new ethers.Contract(
+  //     "0x4550dc4a799178207F5303f7152056696dFC8525",
+  //     Auction.abi,
+  //     signer
+  //   );
+  //   //setMarketplace(marketplace)
+  //   var nft = new ethers.Contract(
+  //     "0x70B6856af810FB2d845B7ca25282e9690eE46b22",
+  //     NFT.abi,
+  //     signer
+  //   );
+  // }
 
   const addressArray = await window.ethereum.request({
-    method: "eth_accounts"
+    method: "eth_accounts",
   });
   if (addressArray.length > 0) {
     return {
@@ -36,12 +62,12 @@ export const loadContracts = async () => {
       auction: auction,
       nft: nft,
       address: addressArray[0],
-      status: ""
+      status: "",
     };
   } else {
     return {
       address: "",
-      status: "🦊 Connect to Metamask using the top right button."
+      status: "🦊 Connect to Metamask using the top right button.",
     };
   }
 };
@@ -50,17 +76,17 @@ export const connectWallet = async () => {
   if (window.ethereum) {
     try {
       const addressArray = await window.ethereum.request({
-        method: "eth_requestAccounts"
+        method: "eth_requestAccounts",
       });
       const obj = {
         status: "Metamask successfuly connected.",
-        address: addressArray[0]
+        address: addressArray[0],
       };
       return obj;
     } catch (err) {
       return {
         address: "",
-        status: "Something went wrong: " + err.message
+        status: "Something went wrong: " + err.message,
       };
     }
   } else {
@@ -71,12 +97,17 @@ export const connectWallet = async () => {
           <p>
             {" "}
             🦊{" "}
-            <a target="_blank" rel="noreferrer" href={`https://metamask.io/download.html`}>
-              You must install Metamask, a virtual Ethereum wallet, in your browser.
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={`https://metamask.io/download.html`}
+            >
+              You must install Metamask, a virtual Ethereum wallet, in your
+              browser.
             </a>
           </p>
         </span>
-      )
+      ),
     };
   }
 };
@@ -85,23 +116,23 @@ export const getCurrentWalletConnected = async () => {
   if (window.ethereum) {
     try {
       const addressArray = await window.ethereum.request({
-        method: "eth_accounts"
+        method: "eth_accounts",
       });
       if (addressArray.length > 0) {
         return {
           address: addressArray[0],
-          status: ""
+          status: "",
         };
       } else {
         return {
           address: "",
-          status: "🦊 Connect to Metamask using the top right button."
+          status: "🦊 Connect to Metamask using the top right button.",
         };
       }
     } catch (err) {
       return {
         address: "",
-        status: "Something went wrong: " + err.message
+        status: "Something went wrong: " + err.message,
       };
     }
   } else {
@@ -112,12 +143,17 @@ export const getCurrentWalletConnected = async () => {
           <p>
             {" "}
             🦊{" "}
-            <a target="_blank" rel="noreferrer" href={`https://metamask.io/download.html`}>
-              You must install Metamask, a virtual Ethereum wallet, in your browser.
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={`https://metamask.io/download.html`}
+            >
+              You must install Metamask, a virtual Ethereum wallet, in your
+              browser.
             </a>
           </p>
         </span>
-      )
+      ),
     };
   }
 };
@@ -128,7 +164,7 @@ export const accountChangeHandler = async () => {
   // Requesting balance method
   const balance = await window.ethereum.request({
     method: "eth_getBalance",
-    params: [address, "latest"]
+    params: [address, "latest"],
   });
 
   return ethers.utils.formatEther(balance);
@@ -152,7 +188,7 @@ export const mintNFT = async (
     return {
       success: false,
       status: "Please make sure all fields are completed before minting.",
-      id: 0
+      id: 0,
     };
   }
 
@@ -166,7 +202,7 @@ export const mintNFT = async (
     return {
       success: false,
       status: "Something went wrong while uploading your tokenURI.",
-      id: 0
+      id: 0,
     };
   }
   const tokenURI = pinataResponse.pinataUrl;
@@ -191,7 +227,9 @@ export const mintNFT = async (
       formData.append("isBuy", false);
       formData.append("owner", walletAddress);
 
-      await axiosInstance.post("/nft/createNft", formData, {}).then((response) => console.log(response));
+      await axiosInstance
+        .post("/nft/createNft", formData, {})
+        .then((response) => console.log(response));
       //activity
       await axiosInstance
         .post("/activity/", {
@@ -201,7 +239,7 @@ export const mintNFT = async (
           price: price,
           from: walletAddress,
           to: "0x00",
-          transactionHash: "0x00"
+          transactionHash: "0x00",
         })
         .then((response) => console.log(response));
     }
@@ -238,7 +276,7 @@ export const mintNFT = async (
           price: minBid,
           from: walletAddress,
           to: "0x00",
-          transactionHash: "0x00"
+          transactionHash: "0x00",
         })
         .then((response) => console.log(response));
     }
@@ -246,7 +284,9 @@ export const mintNFT = async (
 
   return {
     success: true,
-    status: "Check out your transaction on Etherscan: https://testnet.bscscan.com/tx/" + link.hash,
-    id: nftId
+    status:
+      "Check out your transaction on Etherscan: https://testnet.bscscan.com/tx/" +
+      link.hash,
+    id: nftId,
   };
 };

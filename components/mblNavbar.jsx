@@ -359,45 +359,123 @@ const MblNavbar = ({ theme }) => {
       {/* <!-- Primary Nav --> */}
       <nav className="navbar w-full">
         <ul className="flex flex-col lg:flex-row">
-        <li className="group">
-            <Link href="/">
-              <a
-                onClick={() => {
-                  dispatch(closeMblMenu());
-                  localStorage.setItem("navItemValue", 1);
-                }}
-              >
-                <button
-                  className={
-                    router.asPath === "/"
-                      ? "font-display hover:text-accent focus:text-accent flex items-center justify-between py-3.5 text-base lg:text-white text-jacarta-700 dark:text-white lg:px-5"
-                      : "text-jacarta-700 font-display hover:text-accent focus:text-accent dark:hover:text-accent dark:focus:text-accent flex items-center justify-between py-3.5 text-base dark:text-white lg:px-5"
-                  }
+          <li className="js-nav-dropdown group relative">
+            <button
+              className={
+                router.asPath === "/home/home_3"
+                  ? "dropdown-toggle font-display hover:text-accent focus:text-accent flex items-center justify-between py-3.5 text-base text-jacarta-700 dark:lg:text-jacarta-700 lg:text-white lg:px-5 w-full"
+                  : "dropdown-toggle text-jacarta-700 font-display hover:text-accent focus:text-accent dark:hover:text-accent dark:focus:text-accent flex items-center justify-between py-3.5 text-base dark:text-white lg:px-5 w-full"
+              }
+              onClick={e => handleItemDropdown(e)}
+            >
+              <span className={navText === "home" ? "text-accent" : ""}>Home</span>
+
+              <i className="lg:hidden">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  className="h-4 w-4 dark:fill-white"
                 >
-                  <span className={navText === "home" ? "text-accent" : ""}>Home</span>
-                </button>
-              </a>
-            </Link>
+                  <path fill="none" d="M0 0h24v24H0z" />
+                  <path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z" />
+                </svg>
+              </i>
+            </button>
+
+            <ul className="dropdown-menu dark:bg-jacarta-800 left-0 top-[85%] z-10 hidden min-w-[200px] gap-x-4 whitespace-nowrap rounded-xl bg-white transition-all will-change-transform group-hover:visible group-hover:opacity-100 lg:invisible lg:absolute lg:grid lg:translate-y-4 lg:py-4 lg:px-2 lg:opacity-0 lg:shadow-2xl lg:group-hover:translate-y-2 relative">
+              {homenavData.map(({ id, text, url, New }) => {
+                return (
+                  <li key={id}>
+                    <Link href={url}>
+                      <a
+                        className="dark:hover:bg-jacarta-600 hover:text-accent focus:text-accent hover:bg-jacarta-50 flex items-center rounded-xl px-5 py-2 transition-colors"
+                        onClick={() => {
+                          dispatch(closeMblMenu());
+                          localStorage.setItem("navItemValue", id);
+                        }}
+                      >
+                        <span
+                          className={
+                            navItemValue === id
+                              ? "font-display text-accent text-sm"
+                              : "font-display text-jacarta-700 text-sm dark:text-white"
+                          }
+                        >
+                          {text}
+                        </span>
+                        {New &&
+                          <span className="rounded bg-green py-1 px-2 text-xs font-bold uppercase leading-none text-white ml-4">
+                            new
+                          </span>}
+                      </a>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </li>
-            <li className="group">
-            <Link href="/login">
-              <a
-                onClick={() => {
-                  dispatch(closeMblMenu());
-                  localStorage.setItem("navItemValue", 33);
-                }}
-              >
-                <button
-                  className={
-                    router.asPath === "/home/home_3"
-                      ? "font-display hover:text-accent focus:text-accent flex items-center justify-between py-3.5 text-base lg:text-white text-jacarta-700 dark:text-white lg:px-5"
-                      : "text-jacarta-700 font-display hover:text-accent focus:text-accent dark:hover:text-accent dark:focus:text-accent flex items-center justify-between py-3.5 text-base dark:text-white lg:px-5"
-                  }
+          <li className="js-nav-dropdown group relative">
+            <button
+              className={
+                router.asPath === "/home/home_3"
+                  ? "dropdown-toggle font-display  hover:text-accent focus:text-accent flex items-center justify-between py-3.5 text-base lg:text-white text-jacarta-700 dark:text-white lg:px-5 w-full"
+                  : "dropdown-toggle text-jacarta-700 font-display hover:text-accent focus:text-accent dark:hover:text-accent dark:focus:text-accent flex items-center justify-between py-3.5 text-base dark:text-white lg:px-5 w-full"
+              }
+              onClick={e => handleItemDropdown(e)}
+            >
+              <span className={navText === "pages" ? "text-accent" : ""}>Pages</span>
+
+              <i className="lg:hidden">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  className="h-4 w-4 dark:fill-white"
                 >
-                  <span className={navText === "login" ? "text-accent" : ""}>Login</span>
-                </button>
-              </a>
-            </Link>
+                  <path fill="none" d="M0 0h24v24H0z" />
+                  <path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z" />
+                </svg>
+              </i>
+            </button>
+            <ul className="dropdown-menu left-0 top-[85%] z-10 hidden grid-flow-row grid-cols-[repeat(2,_1fr)]
+							gap-x-4 whitespace-nowrap rounded-xl bg-white transition-all will-change-transform
+							group-hover:visible group-hover:opacity-100 dark:bg-jacarta-800 lg:invisible
+							lg:absolute lg:!grid lg:translate-y-4 lg:py-8 lg:px-2 lg:opacity-0 lg:shadow-2xl
+							lg:group-hover:translate-y-2 relative">
+              {pageTextData.map(({ id, text, href, New }) => {
+                return (
+                  <li key={id}>
+                    <Link href={href}>
+                      <a
+                        className="dark:hover:bg-jacarta-600 hover:text-accent focus:text-accent hover:bg-jacarta-50 flex items-center rounded-xl px-5 py-2 transition-colors"
+                        onClick={() => {
+                          dispatch(closeMblMenu());
+                          setNavItemValue(id);
+                          localStorage.setItem("navItemValue", id);
+                        }}
+                      >
+                        <span
+                          className={
+                            navItemValue === id
+                              ? "font-display text-accent text-sm"
+                              : "font-display text-jacarta-700 text-sm dark:text-white"
+                          }
+                        >
+                          {text}
+                        </span>
+                        {New &&
+                          <span className="rounded bg-green py-1 px-2 text-xs font-bold uppercase leading-none text-white ml-4">
+                            new
+                          </span>}
+                      </a>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </li>
           <li className="js-nav-dropdown nav-item dropdown group relative">
             <button

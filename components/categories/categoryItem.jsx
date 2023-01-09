@@ -1,23 +1,19 @@
-import 'tippy.js/dist/tippy.css';
+import "tippy.js/dist/tippy.css";
 
-import Tippy from '@tippyjs/react';
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import Tippy from "@tippyjs/react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { buyModalShow, setCategoryItem } from '../../redux/counterSlice';
-import { getItem } from '../../utils/localStorage';
-import Auctions_dropdown from '../dropdown/Auctions_dropdown';
-import Likes from '../likes';
+import { buyModalShow, setCategoryItem } from "../../redux/counterSlice";
+import { getItem } from "../../utils/localStorage";
+import Auctions_dropdown from "../dropdown/Auctions_dropdown";
+import Likes from "../likes";
 
 const CategoryItem = () => {
-  const { sortedtrendingCategoryItemData, buyModal , trendingCategoryItemData} = useSelector(
-    (state) => state.counter
-  );
-  console.log("trendingCategoryItemData",trendingCategoryItemData)
-
+  const { sortedtrendingCategoryItemData, buyModal, trendingCategoryItemData } =
+    useSelector((state) => state.counter);
+  console.log("trendingCategoryItemData", trendingCategoryItemData);
   const dispatch = useDispatch();
-
- 
   return (
     <div className="grid grid-cols-1 gap-[1.875rem] md:grid-cols-2 lg:grid-cols-4">
       {trendingCategoryItemData?.map((item) => {
@@ -30,7 +26,7 @@ const CategoryItem = () => {
           name,
           owner,
           price,
-          _id
+          _id,
           // bidLimit, //old
           // bidCount,
           // likes,
@@ -115,18 +111,18 @@ const CategoryItem = () => {
               </div>
 
               <div className="mt-8 flex items-center justify-between">
-                {
-                 item.owner.address !== getItem("userAddress")  &&
-               <button
-                  className="text-accent font-display text-sm font-semibold"
-                  onClick={() => {
-                    dispatch(buyModalShow());
-                    dispatch(setCategoryItem(item));
-                  }}
-                >
-                  Buy now
-                </button>
-               }  {/* <Link href={`/item/${itemLink}`}> */}
+                {item.owner.address !== getItem("userAddress") && (
+                  <button
+                    className="text-accent font-display text-sm font-semibold"
+                    onClick={() => {
+                      dispatch(buyModalShow());
+                      dispatch(setCategoryItem(item));
+                    }}
+                  >
+                    Buy now
+                  </button>
+                )}{" "}
+                {/* <Link href={`/item/${itemLink}`}> */}
                 <a className="group flex items-center">
                   <svg className="icon icon-history group-hover:fill-accent dark:fill-jacarta-200 fill-jacarta-500 mr-1 mb-[3px] h-4 w-4">
                     <use xlinkHref="/icons.svg#icon-history"></use>

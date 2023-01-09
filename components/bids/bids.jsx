@@ -13,8 +13,9 @@ const Bids = ({ classes = "pt-10 pb-24", bgWhite }) => {
 
   const loadOnSaleItems = async () => {
     await axiosInstance
-      .post("/nft/get-auction-nfts")
+      .get("/Anft/getAuctionNft")
       .then(res => {
+        console.log(res.data);
         setData(res.data);
       })
       .catch(err => console.log(err, "it has an error"));

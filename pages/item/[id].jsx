@@ -15,8 +15,7 @@ import axiosInstance from "../../utils/axiosInterceptor";
 import More_items from "./more_items";
 import { loadContracts } from "../../contractABI/interact";
 import { ethers } from "ethers";
-
-
+import { toast } from "react-toastify";
 
 const Item = () => {
   const [imageModal, setImageModal] = useState(false);
@@ -28,52 +27,60 @@ const Item = () => {
   const [itemImage, setItemImage] = useState();
   const dispatch = useDispatch();
   const router = useRouter();
-  
 
   console.log("params", router.query.id);
   const pid = router.query.id;
-  const data=router.query
-  console.log("Data passed")
-  console.log(data)
+  const data = router.query;
+  console.log("Data passed");
+  console.log(data);
 
   const loadItem = async () => {
-    const result=await axiosInstance
-      .get(`/nft/getNft/${router.query.id}`).catch((err) => console.log(err, "it has an error"));
+    const result = await axiosInstance
+      .get(`/nft/getNft/${router.query.id}`)
+      .catch((err) => console.log(err, "it has an error"));
 
-console.log(result)
-console.log("called", result.data);
-      const base64String = btoa(
-        String.fromCharCode(...new Uint8Array(result.data.img.data.data))
-      );
-      console.log("image................................");
-console.log(base64String)
-      // const base64OwnerString = btoa(
-      //   String.fromCharCode(
-      //     ...new Uint8Array(result.data.owner.profileImage.data.data)
-      //   )
-      // );
-      // setOwnerImage(base64OwnerString);
-      // const base64CreatorString = btoa(
-      //   String.fromCharCode(
-      //     ...new Uint8Array(result.data.creator.profileImage.data.data)
-      //   )
-      // );
-      // setCreatorImage(base64CreatorString);
-      setItemImage(base64String);
-      console.log("itessssss", result.data, result.data.owner);
-      setItem(result.data);
-      setOwner(result.data.owner);
-      setCreator(result.data.creator);
+    console.log(result);
+    console.log("called", result.data);
+    const base64String = btoa(
+      String.fromCharCode(...new Uint8Array(result.data.img.data.data))
+    );
+    console.log("image................................");
+    console.log(base64String);
+    // const base64OwnerString = btoa(
+    //   String.fromCharCode(
+    //     ...new Uint8Array(result.data.owner.profileImage.data.data)
+    //   )
+    // );
+    // setOwnerImage(base64OwnerString);
+    // const base64CreatorString = btoa(
+    //   String.fromCharCode(
+    //     ...new Uint8Array(result.data.creator.profileImage.data.data)
+    //   )
+    // );
+    // setCreatorImage(base64CreatorString);
+    setItemImage(base64String);
+    console.log("itessssss", result.data, result.data.owner);
+    setItem(result.data);
+    setOwner(result.data.owner);
+    setCreator(result.data.creator);
   };
 
-
-  const placeBid = async () =>{
-	const { auction } = await loadContracts();
-	const options = { value: ethers.utils.parseEther(item.price) }
-	let tx = await (await auction.bid("0xb47c604A3F94a9f1bF205898accc11CfF5e27587", item.id, options)).wait()
-	console.log(tx)
-
-  }
+  const placeBid = async () => {
+    const { auction, nft } = await loadContracts();
+    const options = { value: ethers.utils.parseEther(item.price) };
+    try {
+      const bid = await (
+        await auction.bid(nft.address, item.id, options)
+      ).wait();
+      if (!bid.events[2]) {
+        toast.error("Transaction Failed");
+      } else {
+        // call API
+      }
+    } catch (error) {
+      toast.error(error.reason);
+    }
+  };
 
   useEffect(() => {
     if (router.query.id) {

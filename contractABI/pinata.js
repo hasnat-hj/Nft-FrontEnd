@@ -1,7 +1,7 @@
-const key = "7b8121c59dfc78c4098a";
+const key = "cc05fe7d73ca2d0c9fcd";
 
 const secret =
-  "b5dde682e1cbff9fce2dde1b5b6061d71ea9fc4c9e146562a2b7efa0834926af";
+  "0b573320b17e8bca46c6f197d7db5f3c5e474754a2b42ff11226dc8d394ed444";
 const axios = require("axios");
 
 export const pinJSONToIPFS = async (JSONBody) => {

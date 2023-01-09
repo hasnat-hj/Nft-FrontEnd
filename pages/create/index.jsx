@@ -21,6 +21,7 @@ import {
 } from "../../data/dropdown";
 import { showPropatiesModal } from "../../redux/counterSlice";
 import axiosInstance from "../../utils/axiosInterceptor";
+import { toast } from "react-toastify";
 
 const Create = () => {
   const fileTypes = [
@@ -94,7 +95,7 @@ const Create = () => {
     metadata.description = input.description;
 
     const pinataResponse = await pinJSONToIPFS(metadata);
-    console.log( pinataResponse );
+    console.log(pinataResponse);
     if (!pinataResponse.success) {
       setError({
         status: true,
@@ -111,128 +112,142 @@ const Create = () => {
     try {
       // if auction is selected
       /* ---------START------------- */
-      if(input.type=="auction"){
-      const mint = await nft.mint(tokenURI);
-      setSuccess({ status: false, message: "Minting your NFT..." });
-      await mint.wait();
-      console.log({ mint });
+      if (input.type == "auction") {
+        const mint = await nft.mint(tokenURI);
+        setSuccess({ status: false, message: "Minting your NFT..." });
+        await mint.wait();
+        console.log({ mint });
 
-      const id = await nft.tokenCount();
-      id = parseInt(id);
-      // console.log("id", id);
+        let id = await nft.tokenCount();
+        id = parseInt(id);
+        // console.log("id", id);
 
-      //
+        //
 
-      await (await nft.setApprovalForAll(auction.address, true)).wait();
-      setSuccess({ status: false, message: "Waiting for Approval" });
+        await (await nft.setApprovalForAll(auction.address, true)).wait();
+        setSuccess({ status: false, message: "Waiting for Approval" });
 
-      // add nft to marketplace
-      const listingPrice = ethers.utils.parseEther(input.price.toString());
+        // add nft to marketplace
+        const listingPrice = ethers.utils.parseEther(input.price.toString());
 
-      // was facing time issues, kindly send the time in unix timestamp this endtime expires in a day from current time
-      // update with your logic
-      function addOneDay(date) {
-        date.setDate(date.getDate() + 1);
-        return date;
-      };
-      let duration = new Date()
-duration=addOneDay(duration)
-duration = duration.valueOf();
-let endTime = parseInt(duration);
+        // was facing time issues, kindly send the time in unix timestamp this endtime expires in a day from current time
+        // update with your logic
+        function addOneDay(date) {
+          date.setDate(date.getDate() + 1);
+          return date;
+        }
+        let duration = new Date();
+        duration = addOneDay(duration);
+        duration = duration.valueOf();
+        let endTime = parseInt(duration);
 
+        console.log(endTime);
 
-console.log(endTime)
+        let tx = await (
+          await auction.createTokenAuction(
+            "0xb47c604A3F94a9f1bF205898accc11CfF5e27587",
+            id,
+            listingPrice,
+            endTime
+          )
+        ).wait();
+        setSuccess({ status: false, message: "Listing for Auction" });
 
+        console.log("TX>>>>>>>>>>> ", tx.events[2].args);
 
-      let tx = await (
-        await auction.createTokenAuction(
-          "0xb47c604A3F94a9f1bF205898accc11CfF5e27587",
-          id,
-          listingPrice,
-          endTime
-        )
-      ).wait();
-      setSuccess({ status: false, message: "Listing for Auction" });
+        if (!tx.events[2].args) {
+          toast.error("Transaction Failed");
+        } else {
+          // Auction API, kindly cross check the api if it's working fine or not
+          const formData = new FormData();
+          formData.append("id", id);
+          formData.append("name", input.name);
+          formData.append("minbid", input.price);
+          formData.append("curbid", 0);
+          formData.append("duration", endTime);
+          formData.append("nftImage", input.image);
+          formData.append("isBuy", false);
+          formData.append("owner", address);
+          await axiosInstance
+            .post("/Anft/createAuctionNft", formData, {})
+            .then((response) => console.log(response));
+          //activity
+          await axiosInstance
+            .post("/activity/", {
+              collectionId: "4",
+              itemName: input.name,
+              itemLink:"new",
+              category:input.category,
+              events: "auction",
+              price: input.price,
+              from: "address",
+              to: "0x00",
+              transactionHash: "0x00",
+            })
+            .then((response) => console.log(response));
+            setSuccess({
+              status: true,
+              message: "Congratulations NFT created successfully!",
+            });
+            setLoading(false);
+            setTimeout(() => {
+              router.push("/");
+            }, 2000);
+        }
+      } else {
+        /* ---------END------------- */
+        console.log("fixed");
+        const mint = await nft.mint(tokenURI);
+        setSuccess({ status: false, message: "Minting your NFT..." });
+        await mint.wait();
+        let id = await nft.tokenCount();
+        id = parseInt(id);
+        const nftApprove = await nft.approve(marketplace.address, id);
+        setSuccess({ status: false, message: "Approving your NFT..." });
+        await nftApprove.wait();
+        console.log("nftApprove", nftApprove);
 
-      if (tx) {
-        // this if condition will be changed later
+        // add nft to marketplace
+        const itemPrice = ethers.utils.parseEther(input.price.toString());
 
-        // Auction API, kindly cross check the api if it's working fine or not
-        const formData = new FormData();
-        formData.append("id", id);
-        formData.append("name", name);
-        formData.append("minbid", input.price);
-        formData.append("curbid", 0);
-        formData.append("duration", endTime);
-        formData.append("nftImage", image);
-        formData.append("isBuy", false);
-        formData.append("owner", walletAddress);
-        await axiosInstance
-          .post("/Anft/createAuctionNft", formData, {})
-          .then((response) => console.log(response));
-        //activity
-        await axiosInstance
-          .post("/activity/", {
-            collectionId: "4",
-            itemName: name,
-            events: "auction",
-            price: input.price,
-            from: walletAddress,
-            to: "0x00",
-            transactionHash: "0x00",
-          })
-          .then((response) => console.log(response));
+        console.log("listing", itemPrice);
+
+        setSuccess({ status: false, message: "Uploading NFT..." });
+        const makeItem = await (
+          await marketplace.makeItem(nft.address, id, itemPrice)
+        ).wait();
+        console.log("makeItem: ", makeItem.events[2].args);
+
+        // Fixed price API, kindly cross check the api if it's working fine or not
+        if (!makeItem.events[2].args) {
+          toast.error("Transaction Failed");
+        } else {
+          // this if condition will be changed later
+          console.log("create call with id");
+          const formData = new FormData();
+          formData.append("id", id);
+          formData.append("name", input.name);
+          formData.append("description", input.description);
+          formData.append("price", input.price);
+          formData.append("nftImage", input.image);
+          formData.append("isBuy", false);
+          formData.append("owner", address);
+          formData.append("category", input.category);
+          formData.append("saleType", input.type);
+          console.log({ formData }, input.image);
+          const res = await axiosInstance.post("/nft/createNft", formData, {});
+
+          setSuccess({
+            status: true,
+            message: "Congratulations NFT created successfully!",
+          });
+          setLoading(false);
+          setTimeout(() => {
+            router.push("/");
+          }, 2000);
+          console.log("res", res);
+        }
       }
-    }
-      /* ---------END------------- */
-else{
-console.log("fixed")
-      const mint = await nft.mint(tokenURI);
-      setSuccess({ status: false, message: "Minting your NFT..." });
-      await mint.wait();
-      const nftApprove = await nft.approve(marketplace.address, id);
-      setSuccess({ status: false, message: "Approving your NFT..." });
-      await nftApprove.wait();
-      console.log("nftApprove", nftApprove);
-
-      // add nft to marketplace
-      const itemPrice = ethers.utils.parseEther(input.price.toString());
-
-      console.log("listing", itemPrice);
-
-      const makeItem = await marketplace.makeItem(nft.address, id, itemPrice);
-      setSuccess({ status: false, message: "Uploading NFT..." });
-      console.log("make item", makeItem);
-      await makeItem.wait();
-      console.log("waiting.... end");
-
-      // Fixed price API, kindly cross check the api if it's working fine or not
-      if (id) { // this if condition will be changed later
-        console.log("create call with id");
-        const formData = new FormData();
-        formData.append("id", id);
-        formData.append("name", input.name);
-        formData.append("description", input.description);
-        formData.append("price", input.price);
-        formData.append("nftImage", input.image);
-        formData.append("isBuy", false);
-        formData.append("owner", address);
-        formData.append("category", input.category);
-        formData.append("saleType", input.type);
-        console.log({ formData }, input.image);
-        const res = await axiosInstance.post("/nft/createNft", formData, {});
-
-        setSuccess({
-          status: true,
-          message: "Congratulations NFT created successfully!",
-        });
-        setLoading(false);
-        setTimeout(() => {
-          router.push("/");
-        }, 2000);
-        console.log("res", res);
-      }
-}
     } catch (err) {
       console.log("create error", err);
       if (err.code === "ACTION_REJECTED") {
@@ -733,7 +748,10 @@ console.log("fixed")
                     </label>
                   </div>
                 </li>
-                <li style={{borderRightWidth:0}} className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                <li
+                  style={{ borderRightWidth: 0 }}
+                  className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600"
+                >
                   <div className="flex items-center pl-3">
                     <input
                       id="horizontal-list-radio-id"

@@ -48,10 +48,10 @@ const BidsCarousel = ({data}) => {
         {data?.map((item) => {
           const { _id, img, name, price, owner, category } =
             item;
-          console.log("imae", img)
-            const base64String = btoa(
-              String.fromCharCode(...new Uint8Array(img.data.data))
-            );
+          // console.log("imae", img)
+          //   const base64String = btoa(
+          //     String.fromCharCode(...new Uint8Array(img.data.data))
+          //   );
           const itemLink = _id
           return (
             <SwiperSlide className="text-white" >
@@ -63,7 +63,7 @@ const BidsCarousel = ({data}) => {
                       <a>
                         <div className="w-full">
                           <Image
-                            src={`data:image/png;base64,${base64String}`}
+                            src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+img}
                             alt={name}
                             height={230}
                             width={230}
