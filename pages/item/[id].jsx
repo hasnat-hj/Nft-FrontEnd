@@ -36,16 +36,16 @@ const Item = () => {
 
   const loadItem = async () => {
     const result = await axiosInstance
-      .get(`/nft/getNft/${router.query.id}`)
+      .get(`/Anft/getAuctionNft/${router.query.id}`)
       .catch((err) => console.log(err, "it has an error"));
 
     console.log(result);
-    console.log("called", result.data);
-    const base64String = btoa(
-      String.fromCharCode(...new Uint8Array(result.data.img.data.data))
-    );
-    console.log("image................................");
-    console.log(base64String);
+    // console.log("called", result.data);
+    // const base64String = btoa(
+    //   String.fromCharCode(...new Uint8Array(result.data.img.data.data))
+    // );
+    // console.log("image................................");
+    // console.log(base64String);
     // const base64OwnerString = btoa(
     //   String.fromCharCode(
     //     ...new Uint8Array(result.data.owner.profileImage.data.data)
@@ -57,21 +57,24 @@ const Item = () => {
     //     ...new Uint8Array(result.data.creator.profileImage.data.data)
     //   )
     // );
-    // setCreatorImage(base64CreatorString);
-    setItemImage(base64String);
-    console.log("itessssss", result.data, result.data.owner);
+    // setCreatorImage();
+    setItemImage(result.data.img);
+    // console.log("itessssss", result.data, result.data.owner);
     setItem(result.data);
-    setOwner(result.data.owner);
-    setCreator(result.data.creator);
+    // setOwner(result.data.owner);
+    // setCreator(result.data.creator);
   };
 
   const placeBid = async () => {
     const { auction, nft } = await loadContracts();
-    const options = { value: ethers.utils.parseEther(item.price) };
+    console.log("bid");
+    const options = { value: ethers.utils.parseEther(item.minbid) };
     try {
+      console.log("executed bid");
       const bid = await (
         await auction.bid(nft.address, item.id, options)
       ).wait();
+      toast.success("Placed Successfully");
       if (!bid.events[2]) {
         toast.error("Transaction Failed");
       } else {
@@ -83,9 +86,8 @@ const Item = () => {
   };
 
   useEffect(() => {
-    if (router.query.id) {
       loadItem();
-    }
+   
   }, []);
   // console.log({item},{user},userImage ,itemImage)
   console.log("creator user", creator);
@@ -110,7 +112,7 @@ const Item = () => {
               <button className=" w-full" onClick={() => setImageModal(true)}>
                 {itemImage && (
                   <img
-                    src={`data:image/png;base64,${itemImage}`}
+                    src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+itemImage}
                     alt={item?.name}
                     className="rounded-2xl cursor-pointer  w-full"
                   />
@@ -124,7 +126,7 @@ const Item = () => {
                 <div className="modal-dialog !my-0 flex h-full max-w-4xl items-center justify-center">
                   {!!itemImage && (
                     <img
-                      src={`data:image/png;base64,${itemImage}`}
+                      src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+itemImage}
                       alt={item?.name}
                       className="h-full rounded-2xl"
                     />
@@ -364,7 +366,7 @@ const Item = () => {
             </div>
             {/* <!-- end details --> */}
           </div>
-          <ItemsTabs />
+          {/* <ItemsTabs /> */}
         </div>
       </section>
       {/* <!-- end item --> */}

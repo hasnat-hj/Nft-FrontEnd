@@ -62,7 +62,7 @@ const BidsCarousel = ({data}) => {
                     <Link href={"/item/" + itemLink}>
                       <a>
                         <div className="w-full">
-                          <Image
+                          <img
                             src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+img}
                             alt={name}
                             height={230}
