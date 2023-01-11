@@ -63,7 +63,7 @@ const BidsCarousel = ({data}) => {
                       <a>
                         <div className="w-full">
                           <img
-                            src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+img}
+                            src={img}
                             alt={name}
                             height={230}
                             width={230}
@@ -111,7 +111,7 @@ const BidsCarousel = ({data}) => {
                     <button
                       type="button"
                       className="text-accent font-display text-sm font-semibold"
-                      onClick={() => dispatch(bidsModalShow())}
+                      onClick={() => dispatch(bidsModalShow(10))}
                     >
                       Place bid
                     </button>

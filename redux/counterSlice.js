@@ -12,6 +12,7 @@ const initialState = {
   filteredRenkingData: [],
   walletModal: false,
   bidsModal: false,
+  itemId:"",
   buyModal: false,
   propartiesModalValue: false,
   trendingCategorySorText: "",
@@ -51,8 +52,9 @@ export const counterSlice = createSlice({
     walletModalShow: (state) => {
       state.walletModal = true;
     },
-    walletModalhide: (state) => {
+    walletModalhide: (state,payload) => {
       state.walletModal = false;
+      state.itemId=payload
     },
     bidsModalShow: (state) => {
       state.bidsModal = true;

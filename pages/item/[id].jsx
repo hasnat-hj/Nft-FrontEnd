@@ -17,6 +17,7 @@ import { loadContracts } from "../../contractABI/interact";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 
+
 const Item = () => {
   const [imageModal, setImageModal] = useState(false);
   const [item, setItem] = useState();
@@ -112,7 +113,7 @@ const Item = () => {
               <button className=" w-full" onClick={() => setImageModal(true)}>
                 {itemImage && (
                   <img
-                    src={process.env.NEXT_PUBLIC_SERVER_URL+"/"+itemImage}
+                    src={itemImage}
                     alt={item?.name}
                     className="rounded-2xl cursor-pointer  w-full"
                   />
@@ -356,7 +357,7 @@ const Item = () => {
                 <Link href="#">
                   <button
                     className="bg-accent shadow-accent-volume hover:bg-accent-dark inline-block w-full rounded-full py-3 px-8 text-center font-semibold text-white transition-all"
-                    onClick={() => placeBid()}
+            onClick={() => dispatch(bidsModalShow(10))}
                   >
                     Place Bid
                   </button>

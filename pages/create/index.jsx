@@ -172,18 +172,19 @@ const Create = () => {
             .post("/Anft/createAuctionNft", formData, {})
             .then((response) => console.log(response));
           //activity
+          const formData2 = new FormData();
+          formData2.append("collectionId", 4);
+          formData2.append("itemName", input.name);
+          formData2.append("itemLink", "link ");
+          formData2.append("category", input.category);
+          formData2.append("events", "auction");
+          formData2.append("price", input.price);
+          formData2.append("from", "0x000");
+          formData2.append("to", "0x000");
+          formData2.append("image", input.image);
+          formData2.append("transactionHash", "0x00");
           await axiosInstance
-            .post("/activity/", {
-              collectionId: "4",
-              itemName: input.name,
-              itemLink:"new",
-              category:input.category,
-              events: "auction",
-              price: input.price,
-              from: "address",
-              to: "0x00",
-              transactionHash: "0x00",
-            })
+            .post("/activity/", formData2)
             .then((response) => console.log(response));
             setSuccess({
               status: true,
