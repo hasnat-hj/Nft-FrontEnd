@@ -26,6 +26,7 @@ const Item = () => {
   const [creatorImage, setCreatorImage] = useState();
   const [itemImage, setItemImage] = useState();
   const [modal,setModal]=useState(false)
+  const [address,setAddress]=useState(false)
   const dispatch = useDispatch();
  
   const router = useRouter()
@@ -89,12 +90,23 @@ const Item = () => {
 
   useEffect(() => {
     if(router.isReady){
-
+      
+// setAddress(getAddress())
+(async()=>{
+console.log("helo..............................................")
+setAddress(await getAddress());
+})()
       setId(router.query.id)
         loadItem(router.query.id);
     }
    
   }, [router.isReady]);
+
+
+  const getAddress=async()=>{
+    const {address } = await loadContracts();
+    return address
+  }
   // console.log({item},{user},userImage ,itemImage)
   console.log("creator user", creator);
 
@@ -102,8 +114,8 @@ const Item = () => {
     <>
       <Meta title={`${pid} || Blenny | NFT Marketplace Next.js Template`} />
       {/*  <!-- Item --> */}
-     { item&&<BidsModal values={{id:item.id,modal,setModal,price:item.minbid}} />}
-      <section className="relative lg:mt-24 lg:pt-24 lg:pb-24 mt-24 pt-12 pb-24">
+     { item&&<BidsModal values={{id:item.id,modal,setModal,price:item.minbid,address}} />}
+     {item&& <section className="relative lg:mt-24 lg:pt-24 lg:pb-24 mt-24 pt-12 pb-24">
         <picture className="pointer-events-none absolute inset-0 -z-10 dark:hidden">
           <img
             src="/images/gradient_light.jpg"
@@ -292,10 +304,10 @@ const Item = () => {
                     <span className="text-jacarta-400 block text-sm dark:text-white">
                       Owned by
                     </span>
-                    <Link href={`/user/${owner?.address}`}>
+                    <Link href={`/user/${item.owner}`}>
                       <a className="text-accent block">
                         <span className="text-sm font-bold">
-                          {owner?.username}
+                          {item.owner}
                         </span>
                       </a>
                     </Link>
@@ -359,14 +371,13 @@ const Item = () => {
                   </div>
                 </div>
 
-                <Link href="#">
-                  <button
+              {address==item.owner?<h1>Nft Created by you</h1>
+              :    <button
                     className="bg-accent shadow-accent-volume hover:bg-accent-dark inline-block w-full rounded-full py-3 px-8 text-center font-semibold text-white transition-all"
             onClick={() => setModal(true)}
                   >
                     Place Bid
-                  </button>
-                </Link>
+                  </button>}
               </div>
               {/* <!-- end bid --> */}
             </div>
@@ -374,7 +385,7 @@ const Item = () => {
           </div>
           {/* <ItemsTabs /> */}
         </div>
-      </section>
+      </section>}
       {/* <!-- end item --> */}
 
       <More_items />
@@ -389,15 +400,16 @@ export default Item;
 const BidsModal = ({values}) => {
   
 
-const {id,modal,setModal,price}=values
+const {id,modal,setModal,price,owner}=values
 const [loading,setLoading]=useState(false)
 
   const [ETHAmount, setETHAmount] = useState(0);
 
   const placeBid = async () => {
+    const { auction, nft } = await loadContracts();
     console.log("placing bid......")
     
-    const { auction, nft } = await loadContracts();
+
 
     if (ETHAmount == null) {
       toast.error("Enter Bid amount");

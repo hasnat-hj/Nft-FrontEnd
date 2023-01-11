@@ -5,7 +5,7 @@ import 'tippy.js/dist/tippy.css';
 import Tippy from '@tippyjs/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React,{useState} from 'react';
+import React,{useEffect, useState} from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
 import { Navigation, Pagination, Scrollbar } from 'swiper';
@@ -16,10 +16,20 @@ const BidsCarousel = ({data}) => {
   const [modal,setModal]=useState(false)
   const [nftId,setNftId]=useState(0)
   const [nftprice,setNftPrice]=useState(0)
-  const dispatch = useDispatch();
-  const handleclick = () => {
-    console.log("clicked on ");
-  };
+  const [address,setAddress]=useState(false)
+  useEffect(() => {
+      
+(async()=>{
+console.log("helo..............................................")
+setAddress(await getAddress());
+})()
+    
+  }, []);
+  const getAddress=async()=>{
+    const {address } = await loadContracts();
+    return address
+  }
+
   return (
     <>
     <BidsModal values={{id:nftId,modal,setModal,price:nftprice}} />
@@ -111,7 +121,8 @@ const BidsCarousel = ({data}) => {
                   </div>
 
                   <div className="mt-8 flex items-center justify-between">
-                    <button
+                  {  address==item.owner?<h1>Nft Created by you</h1>:
+                  <button
                       type="button"
                       className="text-accent font-display text-sm font-semibold"
                       onClick={() =>{
@@ -120,7 +131,7 @@ const BidsCarousel = ({data}) => {
                         setModal(true)}}
                     >
                       Place bid
-                    </button>
+                    </button>}
 
                     {/* <Likes
                       like={react_number}
