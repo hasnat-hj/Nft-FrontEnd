@@ -17,9 +17,7 @@ const CategoryItem = () => {
   return (
     <div className="grid grid-cols-1 gap-[1.875rem] md:grid-cols-2 lg:grid-cols-4">
       {trendingCategoryItemData?.map((item) => {
-        const base64String = btoa(
-          String.fromCharCode(...new Uint8Array(item.img.data.data))
-        );
+     
         const {
           id,
           img,
@@ -47,7 +45,7 @@ const CategoryItem = () => {
                 <a>
                   <img
                     // src={image}
-                    src={`data:image/png;base64,${base64String}`}
+                    src={item.img}
                     alt="item 5"
                     className="w-full h-[230px] rounded-[0.625rem] object-cover"
                   />
