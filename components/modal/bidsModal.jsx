@@ -8,21 +8,35 @@ import { toast } from "react-toastify";
 const BidsModal = () => {
   const { bidsModal } = useSelector((state) => state.counter);
   const dispatch = useDispatch();
-  const [ETHAmount, setETHAmount] = useState();
+  const [amount, setAmount] = useState();
 
   const placeBid = async () => {
-    const { auction, nft } = await loadContracts();
+    const { auction, nft, address } = await loadContracts();
 
-    if (ETHAmount == null) {
+    if (amount == null) {
       toast.error("Enter Bid amount");
     } else {
-      const options = { value: ethers.utils.parseEther(ETHAmount.toString()) };
+      const options = { value: ethers.utils.parseEther(amount.toString()) };
       try {
         const bid = await (await auction.bid(nft.address, 6, options)).wait(); // replace 6 with token id nft token id
-        if (!bid.events[2]) {
+        if (!bid.events) {
           toast.error("Transaction Failed");
         } else {
           // call API
+
+          await axiosInstance
+            .post("/activity/", {
+              collectionId: "4",
+              itemName: "name", // item name
+              itemLink: "new",
+              category: "category", // category
+              events: "Bid",
+              price: amount, 
+              from: address,
+              to: nft.address,
+              transactionHash: bid.blockHash,
+            })
+            .then((response) => console.log(response));
 		  
         }
       } catch (error) {
@@ -33,7 +47,7 @@ const BidsModal = () => {
 
   const handleEThAmount = (e) => {
     e.preventDefault();
-    setETHAmount(e.target.value);
+    setAmount(e.target.value);
   };
   return (
     <div>
@@ -86,7 +100,7 @@ const BidsModal = () => {
                   type="number"
                   className="focus:ring-accent h-12 w-full flex-[3] border-0 focus:ring-inse dark:text-jacarta-700"
                   placeholder="Amount"
-                  value={ETHAmount}
+                  value={amount}
                   onChange={(e) => handleEThAmount(e)}
                 />
 

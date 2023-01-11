@@ -108,10 +108,7 @@ const Create = () => {
     console.log("token url", tokenURI);
     console.log("price", input.price);
 
-    // this code is only works for polygon chain, will update to multichain later
     try {
-      // if auction is selected
-      /* ---------START------------- */
       if (input.type == "auction") {
         const mint = await nft.mint(tokenURI);
         setSuccess({ status: false, message: "Minting your NFT..." });
@@ -120,9 +117,6 @@ const Create = () => {
 
         let id = await nft.tokenCount();
         id = parseInt(id);
-        // console.log("id", id);
-
-        //
 
         await (await nft.setApprovalForAll(auction.address, true)).wait();
         setSuccess({ status: false, message: "Waiting for Approval" });
@@ -130,8 +124,6 @@ const Create = () => {
         // add nft to marketplace
         const listingPrice = ethers.utils.parseEther(input.price.toString());
 
-        // was facing time issues, kindly send the time in unix timestamp this endtime expires in a day from current time
-        // update with your logic
         function addOneDay(date) {
           date.setDate(date.getDate() + 1);
           return date;
@@ -139,13 +131,11 @@ const Create = () => {
         let duration = new Date();
         duration = addOneDay(duration);
         duration = duration.valueOf();
-        let endTime = parseInt(duration);
+        const endTime = parseInt(duration);
 
-        console.log(endTime);
-
-        let tx = await (
+        const bid = await (
           await auction.createTokenAuction(
-            "0xb47c604A3F94a9f1bF205898accc11CfF5e27587",
+            nft.address,
             id,
             listingPrice,
             endTime
@@ -153,12 +143,17 @@ const Create = () => {
         ).wait();
         setSuccess({ status: false, message: "Listing for Auction" });
 
-        console.log("TX>>>>>>>>>>> ", tx.events[2].args);
+        console.log(
+          "Auction Successfully created: ",
+          bid.events[2].args.duration.toString(),
+          bid.events[2].args.tokenId.toString(),
+          bid.events[2].args.price.toString(),
+          bid.events[2].args.nft
+        );
 
-        if (!tx.events[2].args) {
+        if (!bid.events[2].args) {
           toast.error("Transaction Failed");
         } else {
-          // Auction API, kindly cross check the api if it's working fine or not
           const formData = new FormData();
           formData.append("id", id);
           formData.append("name", input.name);
@@ -176,27 +171,25 @@ const Create = () => {
             .post("/activity/", {
               collectionId: "4",
               itemName: input.name,
-              itemLink:"new",
-              category:input.category,
+              itemLink: "new",
+              category: input.category,
               events: "auction",
               price: input.price,
-              from: "address",
-              to: "0x00",
-              transactionHash: "0x00",
+              from: address,
+              to: nft.address,
+              transactionHash: bid.blockHash,
             })
             .then((response) => console.log(response));
-            setSuccess({
-              status: true,
-              message: "Congratulations NFT created successfully!",
-            });
-            setLoading(false);
-            setTimeout(() => {
-              router.push("/");
-            }, 2000);
+          setSuccess({
+            status: true,
+            message: "Congratulations NFT created successfully!",
+          });
+          setLoading(false);
+          setTimeout(() => {
+            router.push("/");
+          }, 2000);
         }
       } else {
-        /* ---------END------------- */
-        console.log("fixed");
         const mint = await nft.mint(tokenURI);
         setSuccess({ status: false, message: "Minting your NFT..." });
         await mint.wait();
@@ -205,25 +198,29 @@ const Create = () => {
         const nftApprove = await nft.approve(marketplace.address, id);
         setSuccess({ status: false, message: "Approving your NFT..." });
         await nftApprove.wait();
-        console.log("nftApprove", nftApprove);
 
         // add nft to marketplace
         const itemPrice = ethers.utils.parseEther(input.price.toString());
-
-        console.log("listing", itemPrice);
-
         setSuccess({ status: false, message: "Uploading NFT..." });
+
         const makeItem = await (
           await marketplace.makeItem(nft.address, id, itemPrice)
         ).wait();
-        console.log("makeItem: ", makeItem.events[2].args);
+
+        console.log(
+          "Make item events: ",
+          makeItem.events[2].args.itemId.toString(),
+          makeItem.events[2].args.nft,
+          makeItem.events[2].args.price.toString(),
+          makeItem.events[2].args.seller,
+          makeItem.events[2].args.tokenId.toString()
+        );
 
         // Fixed price API, kindly cross check the api if it's working fine or not
         if (!makeItem.events[2].args) {
           toast.error("Transaction Failed");
         } else {
-          // this if condition will be changed later
-          console.log("create call with id");
+          console.log("Fixed price API is called");
           const formData = new FormData();
           formData.append("id", id);
           formData.append("name", input.name);
@@ -236,6 +233,20 @@ const Create = () => {
           formData.append("saleType", input.type);
           console.log({ formData }, input.image);
           const res = await axiosInstance.post("/nft/createNft", formData, {});
+
+          await axiosInstance
+            .post("/activity/", {
+              collectionId: "4",
+              itemName: input.name,
+              itemLink: "new",
+              category: input.category,
+              events: "Fixed Price",
+              price: input.price,
+              from: address,
+              to: nft.address,
+              transactionHash: makeItem.blockHash,
+            })
+            .then((response) => console.log(response));
 
           setSuccess({
             status: true,
