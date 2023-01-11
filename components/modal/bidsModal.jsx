@@ -5,8 +5,10 @@ import { loadContracts } from "../../contractABI/interact";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 
-const BidsModal = () => {
-  const { bidsModal } = useSelector((state) => state.counter);
+const BidsModal = (id) => {
+  
+  const { bidsModal ,itemId} = useSelector((state) => state.counter);
+  console.log(itemId);
   const dispatch = useDispatch();
   const [ETHAmount, setETHAmount] = useState();
 
