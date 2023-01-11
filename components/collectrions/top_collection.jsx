@@ -1,14 +1,28 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { collection_data } from '../../data/collection_data';
 import HeadLine from '../headLine';
 import Image from 'next/image';
+import { _fetchData } from 'ethers/lib/utils';
+import axiosInstance from '../../utils/axiosInterceptor';
 
 const Top_collection = () => {
 	const [timeActiveText, setTimeActiveText] = useState('last 7 days');
-	const [data, setData] = useState(collection_data);
+	const [data, setData] = useState([]);
 	const [dropdownShow, setDropdownShow] = useState(false);
+
+	useEffect(() => {
+		  axiosInstance
+			.get(`/user/getAll/`)
+			.then(res => {
+	setData(res.data.user)
+			})
+			.catch(err => console.log(err));
+		
+	  }, []);
+
+
 	const timeText = [
 		{
 			id: 1,
@@ -48,7 +62,6 @@ const Top_collection = () => {
 			}
 		});
 	};
-
 	return (
 		<div>
 			<section className="dark:bg-jacarta-800 relative py-24">
@@ -90,7 +103,7 @@ const Top_collection = () => {
 										<button
 											key={id}
 											onClick={() => {
-												handleFilter(text);
+												// handleFilter(text);
 											}}
 											className="block dropdown-text"
 										>
@@ -105,10 +118,12 @@ const Top_collection = () => {
 					</div>
 
 					<div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-[1.875rem] lg:grid-cols-4">
-						{data.map((item) => {
-							const { id, image, title, icon, amount, postTime } = item;
-							const itemLink = image.split('/').slice(-1).toString().replace('.jpg', '');
-
+						{data&&data.map((item,index) => {
+							const { id, profileImage, username,  balance, address } = item;
+							const itemLink = address;
+const userImage= btoa(
+	String.fromCharCode(...new Uint8Array(profileImage.data.data))
+  );
 							return (
 								<div
 									className="border-jacarta-100 dark:bg-jacarta-700 rounded-2xl flex border bg-white py-4 px-7 transition-shadow hover:shadow-lg dark:border-transparent"
@@ -119,17 +134,16 @@ const Top_collection = () => {
 											<a className="relative block">
 												{/* <img src={image} alt={title} className="rounded-2lg" /> */}
 												<Image
-													src={image}
-													alt={title}
+													src={`data:image/png;base64,${userImage}`}
 													className="rounded-2lg"
 													height={48}
 													width={48}
 													objectFit="cover"
 												/>
 												<div className="dark:border-jacarta-600 bg-jacarta-700 absolute -left-3 top-1/2 flex h-6 w-6 -translate-y-2/4 items-center justify-center rounded-full border-2 border-white text-xs text-white">
-													{id}
+													{index+1}
 												</div>
-												{icon && (
+												{true && (
 													<div
 														className="dark:border-jacarta-600 bg-green absolute -left-3 top-[60%] flex h-6 w-6 items-center justify-center rounded-full border-2 border-white"
 														data-tippy-content="Verified Collection"
@@ -153,11 +167,11 @@ const Top_collection = () => {
 										<Link href={'/collection/' + itemLink}>
 											<a className="block">
 												<span className="font-display text-jacarta-700 hover:text-accent font-semibold dark:text-white">
-													{title}
+													{username}
 												</span>
 											</a>
 										</Link>
-										<span className="dark:text-jacarta-300 text-sm">{amount} ETH</span>
+										<span className="dark:text-jacarta-300 text-sm">{balance} Matic</span>
 									</div>
 								</div>
 							);
