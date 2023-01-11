@@ -58,7 +58,7 @@ setAddress(await getAddress());
         }}
         className=" card-slider-4-columns !py-5"
       >
-        {data?.map((item) => {
+        {data&&data?.map((item) => {
           const { _id,id ,img, name, minbid:price, owner, category } =
             item;
           // console.log("imae", img)

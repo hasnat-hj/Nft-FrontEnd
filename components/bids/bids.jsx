@@ -9,7 +9,7 @@ import BidsCarousel from '../carousel/bidsCarousel';
 import { HeadLine } from '../component';
 
 const Bids = ({ classes = "pt-10 pb-24", bgWhite }) => {
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
 
   const loadOnSaleItems = async () => {
     await axiosInstance
