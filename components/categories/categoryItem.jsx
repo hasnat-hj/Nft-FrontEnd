@@ -109,7 +109,7 @@ const CategoryItem = () => {
               </div>
 
               <div className="mt-8 flex items-center justify-between">
-                {item.owner.address !== getItem("userAddress") && (
+                {item.owner !== getItem("userAddress") && (
                   <button
                     className="text-accent font-display text-sm font-semibold"
                     onClick={() => {
