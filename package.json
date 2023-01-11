@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/react": "^11.9.3",
+    "@emotion/react": "^11.10.5",
+    "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.9.3",
     "@material-tailwind/react": "^1.2.4",
-    "@mui/material": "^5.8.7",
+    "@mui/icons-material": "^5.10.9",
+    "@mui/material": "^5.11.4",
     "@reduxjs/toolkit": "^1.8.2",
     "@tippyjs/react": "^4.2.6",
     "axios": "^1.2.0",
