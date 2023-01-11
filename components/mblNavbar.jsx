@@ -912,9 +912,7 @@ const MblNavbar = ({ theme }) => {
                 <div className="dark:border-jacarta-600 border-jacarta-100 mx-5 mb-6 rounded-lg border p-4">
                   <span className="dark:text-jacarta-200 text-sm font-medium tracking-tight">Balance</span>
                   <div className="flex items-center">
-                    <svg className="icon icon-ETH -ml-1 mr-1 h-[1.125rem] w-[1.125rem]">
-                      <use xlinkHref="/icons.svg#icon-ETH" />
-                    </svg>
+                  <img  src="/images/polygon-matic-logo.png" style={{width:15,marginRight:5}} alt="" />
                     <span className="text-green text-lg font-bold">
                       {getItem("userBalance") ? getItem("userBalance") : 10}
                     </span>

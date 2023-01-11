@@ -345,14 +345,14 @@ setAddress(await getAddress());
                       </figure>
                       <div>
                         <div className="flex items-center whitespace-nowrap">
-                          <Tippy content={<span>ETH</span>}>
+                          <Tippy content={<span>Matic</span>}>
                             <span className="-ml-1">
                             <img  src="/images/polygon-matic-logo.png" style={{width:15,marginRight:5}} alt="" />
                  
                             </span>
                           </Tippy>
                           <span className="text-green text-lg font-medium leading-tight tracking-tight">
-                            {item?.minbid} ETH
+                            {item?.minbid} Matic
                           </span>
                         </div>
                         <span className="dark:text-jacarta-300 text-jacarta-400 text-sm">
