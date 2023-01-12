@@ -121,9 +121,7 @@ const Top_collection = () => {
 						{data&&data.map((item,index) => {
 							const { id, profileImage, username,  balance, address } = item;
 							const itemLink = address;
-if(profileImage){const userImage= btoa(
-	String.fromCharCode(...new Uint8Array(profileImage.data.data))
-  );}
+
 							return (
 								<div
 									className="border-jacarta-100 dark:bg-jacarta-700 rounded-2xl flex border bg-white py-4 px-7 transition-shadow hover:shadow-lg dark:border-transparent"
@@ -134,7 +132,9 @@ if(profileImage){const userImage= btoa(
 											<a className="relative block">
 												{/* <img src={image} alt={title} className="rounded-2lg" /> */}
 											{	<Image
-													src={`data:image/png;base64,${profileImage&&userImage}`}
+													src={`data:image/png;base64,${profileImage&&btoa(
+														String.fromCharCode(...new Uint8Array(profileImage.data.data))
+													  )}`}
 													className="rounded-2lg"
 													height={48}
 													width={48}

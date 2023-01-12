@@ -14,7 +14,7 @@ const Navbar = () => {
   const [scroll, setScroll] = useState(false);
   const [home3, setHome3] = useState(false);
 
-  const { mblMenu } = useSelector(state => state.counter);
+  const { mblMenu,loggedin } = useSelector(state => state.counter);
   const dispatch = useDispatch();
   const router = useRouter();
   const pid = router.asPath;

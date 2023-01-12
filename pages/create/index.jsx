@@ -834,7 +834,8 @@ const Create = () => {
               <input
                 value={input.price}
                 onChange={handleChange}
-                type="text"
+                type="number"
+                min={0}
                 name="price"
                 id="item-supply"
                 className="dark:bg-jacarta-700 bg-jacarta-50 border-jacarta-100 dark:border-jacarta-600 dark:placeholder:text-jacarta-300 w-full rounded-lg py-3 px-3 dark:text-white"

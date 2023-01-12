@@ -379,7 +379,7 @@ const MblNavbar = ({ theme }) => {
               </a>
             </Link>
           </li>
-            <li className="group">
+       {!loggedin&&     <li className="group">
             <Link href="/login">
               <a
                 onClick={() => {
@@ -398,7 +398,7 @@ const MblNavbar = ({ theme }) => {
                 </button>
               </a>
             </Link>
-          </li>
+          </li>}
           <li className="js-nav-dropdown nav-item dropdown group relative">
             <button
               className={

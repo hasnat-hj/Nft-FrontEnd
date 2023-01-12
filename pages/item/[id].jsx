@@ -382,8 +382,9 @@ setAddress(await getAddress());
               {/* <!-- end bid --> */}
             </div>
             {/* <!-- end details --> */}
+            
           </div>
-          {/* <ItemsTabs /> */}
+          <ItemsTabs />
         </div>
       </section>}
       {/* <!-- end item --> */}

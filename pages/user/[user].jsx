@@ -54,7 +54,7 @@ const User = () => {
 				}
 			}).catch(err => console.log(err));
 		}
-	}, []);
+	}, [router.query.user]);
 	console.log("user", user);
 	useEffect(() => {
 
