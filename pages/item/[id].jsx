@@ -48,6 +48,7 @@ const Item = () => {
   const [creator, setCreator] = useState();
   const [itemImage, setItemImage] = useState();
   const [address,setAddress]=useState(false)
+  const [highestBid,setHighestBid]=useState(false)
   const dispatch = useDispatch();
  
   const router = useRouter()
@@ -89,6 +90,13 @@ const Item = () => {
     setCreator(result.data.creator)
     // setOwner(result.data.owner);
     // setCreator(result.data.creator);
+
+
+    const result2 = await axiosInstance
+    .get(`/Anft/auctionBidHighest/${router.query.id}`)
+    .catch((err) => console.log(err, "it has an error"));
+    console.log(result2)
+    setHighestBid(result2.data)
   };
 
  
@@ -102,9 +110,10 @@ const Item = () => {
 (async()=>{
 console.log("helo..............................................")
 setAddress(await getAddress());
+await loadItem(router.query.id);
 })()
       setId(router.query.id)
-        loadItem(router.query.id);
+    
     
       }
   }, [router.isReady]);

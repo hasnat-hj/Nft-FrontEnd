@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Logintrue, walletModalShow } from '../../redux/counterSlice';
 import axiosInstance from '../../utils/axiosInterceptor';
-import { getItem, saveItem } from '../../utils/localStorage';
+import { getItem, saveItem ,removeItem} from '../../utils/localStorage';
 
 const Metamask_comp_text = () => {
   const { status, connect, account, ethereum } = useMetaMask();
@@ -160,6 +160,7 @@ const Metamask_comp_login = () => {
   const dispatch = useDispatch();
 
   const handleSubmit = async () => {
+    setAccountAddress(null);
     const { ethereum } = window;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -170,6 +171,7 @@ const Metamask_comp_login = () => {
       const accounts = await ethereum.request({
         method: "eth_requestAccounts"
       });
+      console.log(accounts)
       let balance = await provider.getBalance(accounts[0]);
       let bal = ethers.utils.formatEther(balance);
 
@@ -183,6 +185,7 @@ const Metamask_comp_login = () => {
           balance: bal
         })
         .then((res) => {
+          removeItem("userAddress")
           saveItem(accounts[0], "userAddress");
           saveItem(bal, "userBalance");
           dispatch(Logintrue());
