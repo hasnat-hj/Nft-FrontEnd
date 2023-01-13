@@ -40,17 +40,12 @@ const User = () => {
 				console.log(res);
 				setUser(res?.data?.user);
 				if (res?.data?.user?.coverImage) {
-					const base64String = btoa(
-						String.fromCharCode(...new Uint8Array(res.data.user.coverImage.data.data))
-					);
-					setCoverPreview(`data:image/png;base64,${base64String}`);
+					
+					setCoverPreview(res?.data?.user?.coverImage);
 				}
 				if (res?.data.user?.profileImage) {
-					const base64String = btoa(
-						String.fromCharCode(...new Uint8Array(res.data.user.profileImage.data.data))
-					);
-				
-					setProfilePreview(`data:image/png;base64,${base64String}`);
+					
+					setProfilePreview(res?.data.user?.profileImage);
 				}
 			}).catch(err => console.log(err));
 		}
@@ -70,19 +65,21 @@ const User = () => {
 			<div className="pt-[5.5rem] lg:pt-24">
 							{/* <!-- Banner --> */}
 							<div className="relative h-[18.75rem]">
-								<Image src={!!coverPreview ? coverPreview: "/images/user/banner.jpg"} alt="banner" layout="fill" objectFit="cover" />
+								<img src={!!coverPreview ? coverPreview: "/images/user/banner.jpg"} alt="banner" style={{    width: "100%",
+												height: "100%",
+												objectFit :"cover"}} />
 							</div>
 							{/* <!-- end banner --> */}
 							<section className="dark:bg-jacarta-800 bg-light-base relative pb-12 pt-28">
 								{/* <!-- Avatar --> */}
 								<div className="absolute left-1/2 top-0 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
 									<figure className="relative h-40 w-40 dark:border-jacarta-600 rounded-xl border-[5px] border-white">
-										<Image
+										<img
 											src={!!profilePreview ? profilePreview : "/images/avatars/avatar_1.jpg"}
 											alt={!!user?.username? user?.username: "Account_1"}
-											layout="fill"
-											objectFit="contain"
-											className="dark:border-jacarta-600 rounded-xl border-[5px] border-white"
+											style={{    width: "100%",
+												height: "100%",
+												objectFit :"cover"}}
 										/>
 										<div
 											className="dark:border-jacarta-600 bg-green absolute -right-3 bottom-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white"

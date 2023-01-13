@@ -131,15 +131,13 @@ const Top_collection = () => {
 										<Link href={'/collection/' + itemLink}>
 											<a className="relative block">
 												{/* <img src={image} alt={title} className="rounded-2lg" /> */}
-											{	<Image
-													src={`data:image/png;base64,${profileImage&&btoa(
-														String.fromCharCode(...new Uint8Array(profileImage.data.data))
-													  )}`}
+												<img
+													src={profileImage?profileImage:"/images/user/banner.jpg"}
 													className="rounded-2lg"
 													height={48}
 													width={48}
-													objectFit="cover"
-												/>}
+													style={{width:48,height:48,objectFit:"cover"}}
+												/>
 												<div className="dark:border-jacarta-600 bg-jacarta-700 absolute -left-3 top-1/2 flex h-6 w-6 -translate-y-2/4 items-center justify-center rounded-full border-2 border-white text-xs text-white">
 													{index+1}
 												</div>
