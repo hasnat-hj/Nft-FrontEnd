@@ -88,13 +88,13 @@ const OfferTab = ({item:bidItem,offers}) => {
 									className="dark:border-jacarta-600 border-jacarta-100 flex items-center border-t py-4 px-4"
 									role="cell"
 								>
-									{(bid/bidItem.minbid)*100}% {bid<bidItem.minbid? "Below":"Above"}
+									{Math.floor((bid/bidItem.minbid)*100)}% {bid<bidItem.minbid? "Below":"Above"}
 								</div>
 								<div
 									className="dark:border-jacarta-600 border-jacarta-100 flex items-center border-t py-4 px-4"
 									role="cell"
 								>
-									in {created_at} months
+									in 2 months
 								</div>
 								<div
 									className="dark:border-jacarta-600 border-jacarta-100 flex items-center border-t py-4 px-4"

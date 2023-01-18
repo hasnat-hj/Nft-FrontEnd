@@ -132,7 +132,7 @@ const Top_collection = () => {
 											<a className="relative block">
 												{/* <img src={image} alt={title} className="rounded-2lg" /> */}
 												<img
-													src={profileImage?profileImage:"/images/user/banner.jpg"}
+													src={profileImage?profileImage:"/images/user/user_avatar.gif"}
 													className="rounded-2lg"
 													height={48}
 													width={48}
