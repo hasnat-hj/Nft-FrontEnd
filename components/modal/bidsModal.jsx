@@ -5,6 +5,7 @@ import { loadContracts } from "../../contractABI/interact";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInterceptor";
+import  Router  from "next/router";
 
 const BidsModal = (id) => {
   
@@ -35,7 +36,7 @@ const BidsModal = (id) => {
   //   }
   // };
  const placeBid = async () => {
-    const { auction, nft } = await loadContracts();
+    const { auction, nft,address } = await loadContracts();
     console.log("placing bid......")
     
     setLoading(true)
@@ -45,7 +46,7 @@ const BidsModal = (id) => {
     } else {
       const options = { value: ethers.utils.parseEther(ETHAmount.toString()) };
       try {
-       
+       console.log(address)
         const bid = await (await auction.bid(nft.address, bidItem.id, options)).wait(); // replace 6 with token id nft token id
   
       
@@ -57,13 +58,15 @@ const BidsModal = (id) => {
 
    
     const result= await  axiosInstance
-          .put(`/Anft/auctionBid/${bidItem._id}`,{address:nft.address,bid:ETHAmount})
+          .put(`/Anft/auctionBid/${bidItem._id}`,{address,bid:ETHAmount})
           setLoading(false)
           if(result.status!==200)
           return toast.error("Error occured")
   console.log(result.data);
 
         toast.success("Placed Bid");
+        dispatch(bidsModalHide())
+        Router.reload()
         
 
       }
@@ -117,12 +120,10 @@ const BidsModal = (id) => {
               <div className="dark:border-jacarta-600 border-jacarta-100 relative mb-2 flex items-center overflow-hidden rounded-lg border">
                 <div className="border-jacarta-100 bg-jacarta-50 flex flex-1 items-center self-stretch border-r px-2">
                   <span>
-                    <svg className="icon icon-ETH mr-1 h-5 w-5">
-                      <use xlinkHref="/icons.svg#icon-ETH"></use>
-                    </svg>
+                  <img  src="/images/polygon-matic-logo.png" style={{width:15,marginRight:5}} alt="" />
                   </span>
                   <span className="font-display text-jacarta-700 text-sm">
-                    ETH
+                  MTC
                   </span>
                 </div>
 
@@ -135,13 +136,13 @@ const BidsModal = (id) => {
                 />
 
                 <div className="bg-jacarta-50 border-jacarta-100 flex flex-1 justify-end self-stretch border-l dark:text-jacarta-700">
-                  <span className="self-center px-2 text-sm">$130.82</span>
+                  <span className="self-center px-2 text-sm">{bidItem.curbid} MTC</span>
                 </div>
               </div>
 
               <div className="text-right">
                 <span className="dark:text-jacarta-400 text-sm">
-                  Balance: 0.0000 WETH
+                  {/* Balance: 0.0000 WETH */}
                 </span>
               </div>
 

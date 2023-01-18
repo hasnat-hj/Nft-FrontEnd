@@ -1,25 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import "tippy.js/dist/tippy.css";
 
 import Tippy from "@tippyjs/react";
@@ -65,31 +43,12 @@ const Item = () => {
       .catch((err) => console.log(err, "it has an error"));
 
     console.log(result);
-    // console.log("called", result.data);
-    // const base64String = btoa(
-    //   String.fromCharCode(...new Uint8Array(result.data.img.data.data))
-    // );
-    // console.log("image................................");
-    // console.log(base64String);
-    // const base64OwnerString = btoa(
-    //   String.fromCharCode(
-    //     ...new Uint8Array(result.data.owner.profileImage.data.data)
-    //   )
-    // );
-    // setOwnerImage(base64OwnerString);
-    // const base64CreatorString = btoa(
-    //   String.fromCharCode(
-    //     ...new Uint8Array(result.data.creator.profileImage.data.data)
-    //   )
-    // );
-    // setCreatorImage();
+   
     setItemImage(result.data.img);
     // console.log("itessssss", result.data, result.data.owner);
     setItem(result.data);
     setOwner(result.data.owner)
     setCreator(result.data.creator)
-    // setOwner(result.data.owner);
-    // setCreator(result.data.creator);
 
 
     const result2 = await axiosInstance
@@ -240,7 +199,7 @@ await loadItem(router.query.id);
                   </span>
                 </div>
                 <span className="dark:text-jacarta-300 text-jacarta-400 text-sm">
-                  Highest bid
+                 Price
                 </span>
                 <span className="dark:text-jacarta-300 text-jacarta-400 text-sm">
                   1/1 available
@@ -257,7 +216,7 @@ await loadItem(router.query.id);
                       <a className="relative block">
                         {creator && (
                           <img
-                            src={creator.profileImage}
+                            src={creator.profileImage?creator.profileImage:"/images/user/user_avatar.gif"}
                             alt={creator?.username}
                             className="rounded-2lg h-12 w-12"
                             loading="lazy"
@@ -296,7 +255,7 @@ await loadItem(router.query.id);
                       <a className="relative block">
                         {owner && (
                           <img
-                            src={owner.profileImage}
+                            src={owner.profileImage?owner.profileImage:"/images/user/user_avatar.gif"} 
                             alt={owner?.username}
                             className="rounded-2lg h-12 w-12"
                             loading="lazy"
@@ -340,9 +299,9 @@ await loadItem(router.query.id);
                       <span className="dark:text-jacarta-300 text-jacarta-400 text-sm">
                         Highest bid by{" "}
                       </span>
-                      <Link href="/user/avatar_6">
+                      <Link href={"/user/"+highestBid.address}>
                         <a className="text-accent text-sm font-bold">
-                          0x695d2ef170ce69e794707eeef9497af2de25df82
+                          {highestBid.address}
                         </a>
                       </Link>
                     </div>
@@ -351,7 +310,8 @@ await loadItem(router.query.id);
                         <Link href="#">
                           <a className="relative block">
                             <img
-                              src="/images/avatars/avatar_4.jpg"
+                             src={highestBid&&highestBid.user.profileImage?highestBid.user.profileImage:"/images/user/user_avatar.gif"}
+												
                               alt="avatar"
                               className="rounded-2lg h-12 w-12"
                               loading="lazy"
@@ -368,7 +328,7 @@ await loadItem(router.query.id);
                             </span>
                           </Tippy>
                           <span className="text-green text-lg font-medium leading-tight tracking-tight">
-                            {item?.minbid} Matic
+                            {item?.curbid} Matic
                           </span>
                         </div>
                         <span className="dark:text-jacarta-300 text-jacarta-400 text-sm">
